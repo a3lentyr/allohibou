@@ -90,17 +90,64 @@ def create_random_links(m):
      
     return d
     
+def ccw(A,B,C):
+    return (C[1]-A[1]) * (B[0]-A[0]) > (B[1]-A[1]) * (C[0]-A[0])
+
+# Return true if line segments AB and CD intersect
+def intersect(A,B,C,D):
+    return ccw(A,C,D) != ccw(B,C,D) and ccw(A,B,C) != ccw(A,B,D)
+    
+def score_link(x,d):
+    count=0
+    # make the list of segments
+    segment=[]
+    for i,pos in enumerate(x):
+        for j,target in enumerate(d[i]):
+            if target>0 and j>i:
+                segment.append([pos,x[j]])
+                
+    for i,seg1 in enumerate(segment):
+        for j,seg2 in enumerate(segment):
+            if j>i and intersect(seg1[0],seg1[1],seg2[0],seg2[1]):
+                count+=1
+    
+    return count
+    
+def find_best_links(x):
+    m=len(x)
+    best_d =[]
+    best_score=1000
+    
+    for test in range(0,200):
+        d = create_random_links(m)
+        s = score_link(x,d)
+        if best_score> s:
+            best_d = d
+            best_score = s
+
+            
+    return best_d,best_score
+    
 def get_places_coordinates(d):
     m=len(d)
     x = []
     v = []
+    best_score=1000
+    best_d = d
     for i in xrange(m):
         xi = [random.random(), random.random()]
         x.append(xi)
         v.append([0.0, 0.0])
-    for i in range(0,2000):
-        x,v=forcedrawing(x,v,d)
-    return x
+
+    for i in range(0,200):
+        x,v=forcedrawing(x,v,best_d)
+        d_test,score = find_best_links(x)
+        if score<best_score:
+            best_d=d_test
+            best_score=score
+        print(best_score)
+        
+    return x,best_d
     
         
 # return a unique file name
@@ -148,7 +195,7 @@ def main():
     
     # placing places
     d = create_random_links(len(places_list))
-    places_coord= get_places_coordinates(d)
+    places_coord,d = get_places_coordinates(d)
     
     # -- rescale such that everything is in 30:270 and 30:230
     minx=min([x[0] for x in places_coord])
