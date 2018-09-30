@@ -7,7 +7,7 @@ from math import sqrt
 
 # mass
 alpha = 1.0
-beta = .001
+beta = .002
 k = 0.08
 #damping
 eta = .99
@@ -218,17 +218,12 @@ def get_places_coordinates(m):
         best_d = create_random_links(x,m)
         count_links=sum([sum(d) for d in best_d])/0.6
         count_single=sum([1 for d in best_d if sum(d)/0.3<=1])
-        print(count_links,count_single)
-
-    # now we add links until there is 17 real path
-    next_list = range(m)
-    next_list = get_ordered_list(next_list,x,i)
-    # TODO
     
     # finish with a simple Forced based drawing
     
     for i in range(0,1000):
         x,v=forcedrawing(x,v,best_d)
+    
     
     return x,best_d
     
@@ -279,6 +274,7 @@ def main():
     # placing places
     places_coord,d = get_places_coordinates(len(places_list))
     
+    
     # -- rescale such that everything is in 30:270 and 30:230
     minx=min([x[0] for x in places_coord])
     maxx=max([x[0] for x in places_coord])
@@ -293,10 +289,21 @@ def main():
         
     content_text=""
     # adding path
+    shortened_list=[]
     for i,place_list in enumerate(d):
         for j,target in enumerate(place_list):
             if target>0 and j>i:
-                content_text+= '<line x1="'+str(trans_places[i][0])+'" y1="'+str(trans_places[i][1])+'" x2="'+str(trans_places[j][0])+'" y2="'+str(trans_places[j][1])+'" stroke="black" />'
+                # path between 4 and 4 are only drawn as half
+                x1=trans_places[i][0]
+                y1=trans_places[i][1]
+                x2=trans_places[j][0]
+                y2=trans_places[j][1]
+                if sum(place_list)/0.3>3 and sum(d[j])/0.3>3 and i not in shortened_list and j not in shortened_list:
+                    x2=(x1+x2)/2
+                    y2=(y1+y2)/2
+                    shortened_list.append(i)
+                    shortened_list.append(j)
+                content_text+= '<line x1="'+str(x1)+'" y1="'+str(y1)+'" x2="'+str(x2)+'" y2="'+str(y2)+'" stroke="black" />'                
 
     # Adding places
     
