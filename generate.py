@@ -8,7 +8,7 @@ from math import sqrt
 # mass
 alpha = 1.0
 beta = .001
-k = 0.1
+k = 0.08
 #damping
 eta = .99
 delta_t = .01
@@ -69,7 +69,29 @@ def get_ordered_list(points, x_list, i):
    y=x_list[i][0]
    points.sort(key = lambda p: sqrt((x_list[p][0] - x)**2 + (x_list[p][1] - y)**2))
    return points
-   
+
+def create_multiple_link(nrows,x,i,d,segment,num_max=3):
+    next_list = range(nrows)
+    random.shuffle(next_list)
+    next_list = get_ordered_list(next_list,x,i)
+    
+    links_count=sum(d[i])/0.3
+
+    # finding links that can be allocated
+    for j in next_list:
+        links_next=sum(d[j])/0.3
+        if(i != j and links_count<num_max and links_next<num_max):
+            inter=False
+            for seg2 in segment:
+                inter = inter or intersect(x[i],x[j],seg2[0],seg2[1])
+                
+            if not inter:
+                d[i][j]=.3
+                d[j][i]=.3
+                links_count+=1
+                segment.append([x[i] ,x[j]])
+                
+    return d,segment
    
 # link creation and adjustment
 def create_random_links(x,m):
@@ -83,33 +105,18 @@ def create_random_links(x,m):
         d.append(dr)
     
     segment=[]
-                
-    for i in xrange(nrows):
-        #print(" ----- Link : "+str(i))
-        # count how many link already created
-        links=sum(d[i])/0.3
-        if links<3 and i<nrows-1:
-            # create only links with latter nodes
-            next_list = range(nrows)
-            random.shuffle(next_list)
-            next_list = get_ordered_list(next_list,x,i)
-            links_count=links
-            
-            # finding links that can be allocated
-            for j in next_list:
-                links_next=sum(d[j])/0.3
-                if(i != j and links_count<3 and links_next<3):
-                    #print("candidate : "+str(j))
-                    inter=False
-                    for seg2 in segment:
-                        inter = inter or intersect(x[i],x[j],seg2[0],seg2[1])
-                        
-                    if not inter:
-                        d[i][j]=.3
-                        d[j][i]=.3
-                        links_count+=1
-                        segment.append([x[i] ,x[j]])
-                        #print(len(segment))
+    
+    # first we create a cycle
+    cycle_list = range(nrows)
+    random.shuffle(cycle_list)
+    
+    for i in cycle_list:
+        d,segment = create_multiple_link(nrows,x,i,d,segment,2)
+    cycle_list=list(reversed(cycle_list))
+    
+    # Then we complete the links            
+    for i in cycle_list:
+        d,segment = create_multiple_link(nrows,x,i,d,segment,3)
         
      
     return d
@@ -166,22 +173,39 @@ def get_places_coordinates(m):
     
     # we generate a grid 4*4
     grid=[]
+
     for i in range(4):
         for j in range(4):
             grid.append([i/4.0,j/4.0])
-    random.shuffle(grid)
+                
+    # count the number of links
+    count_links=0
+    count_single=0
+    while count_links <15.9 or count_single>0:
+    
+        random.shuffle(grid)
+                
+        x = []
+        v = []
             
+        for i in xrange(m):
+            xi = grid[i]
+            x.append(xi)
+            v.append([0.0, 0.0])
         
-    for i in xrange(m):
-        xi = grid[i]
-        x.append(xi)
-        v.append([0.0, 0.0])
+        best_d = create_random_links(x,m)
+        count_links=sum([sum(d) for d in best_d])/0.6
+        count_single=sum([1 for d in best_d if sum(d)/0.3<1])
+        print(count_links,count_single)
 
-    best_d = create_random_links(x,m)
+    # now we add links until there is 17 real path
+    next_list = range(m)
+    next_list = get_ordered_list(next_list,x,i)
+    # TODO
     
     # finish with a simple Forced based drawing
     
-    for i in range(0,200):
+    for i in range(0,100):
         x,v=forcedrawing(x,v,best_d)
     
     return x,best_d
@@ -249,7 +273,7 @@ def main():
     # adding path
     for i,place_list in enumerate(d):
         for j,target in enumerate(place_list):
-            if target>0:
+            if target>0 and j>i:
                 content_text+= '<line x1="'+str(trans_places[i][0])+'" y1="'+str(trans_places[i][1])+'" x2="'+str(trans_places[j][0])+'" y2="'+str(trans_places[j][1])+'" stroke="black" />'
 
     # Adding places
