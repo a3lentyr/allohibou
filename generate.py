@@ -46,13 +46,14 @@ def forcedrawing(x,v,d):
             if j == 1:
                 continue
             dij = d[i][j]
-            Fij = 0.0
-            if dij == 0.0:
-                Fij = Coulomb_force(x[i], x[j])
-            else:
-                Fij = Hooke_force(x[i], x[j], dij)
-            Fx += Fij[0]
-            Fy += Fij[1]
+            FijH = [0.0,0.0]
+            
+            FijC = Coulomb_force(x[i], x[j])
+            if dij != 0.0:
+                FijH = Hooke_force(x[i], x[j], dij)
+                
+            Fx += FijC[0]+FijH[0]
+            Fy += FijC[1]+FijH[1]
         v[i][0] = (v[i][0] + alpha * Fx * delta_t) * eta
         v[i][1] = (v[i][1] + alpha * Fy * delta_t) * eta
         ekint[0] = ekint[0] + alpha * (v[i][0] * v[i][0])
@@ -78,20 +79,41 @@ def create_multiple_link(nrows,x,i,d,segment,num_max=3):
     links_count=sum(d[i])/0.3
 
     # finding links that can be allocated
+    d,segment = create_single_link(d,segment,x,next_list,i,num_max)
+                
+    return d,segment
+    
+    
+def create_single_link(d,segment,x,next_list,i,num_max=3):
+    found_list=[]
+    links_count=sum(d[i])/0.3
+    if(links_count>=num_max):
+        return d,segment
+    
+    # finding links that can be allocated
     for j in next_list:
         links_next=sum(d[j])/0.3
-        if(i != j and links_count<num_max and links_next<num_max):
+        if(i != j and links_next<num_max and d[i][j]<=0):
             inter=False
             for seg2 in segment:
                 inter = inter or intersect(x[i],x[j],seg2[0],seg2[1])
                 
             if not inter:
-                d[i][j]=.3
-                d[j][i]=.3
-                links_count+=1
-                segment.append([x[i] ,x[j]])
+                found_list.append(j)
+                
+    # selecting closest link
+    found_sorted=get_ordered_list(found_list, x, i)
+   
+    if len(found_sorted)>0:
+        j=found_sorted[0]
+        d[i][j]=.3
+        d[j][i]=.3
+        segment.append([x[i] ,x[j]])
+        next_list = get_ordered_list(next_list,x,j)
+        d,segment=create_single_link(d,segment,x,next_list,j,num_max)
                 
     return d,segment
+    
    
 # link creation and adjustment
 def create_random_links(x,m):
@@ -116,7 +138,7 @@ def create_random_links(x,m):
     
     # Then we complete the links            
     for i in cycle_list:
-        d,segment = create_multiple_link(nrows,x,i,d,segment,3)
+        d,segment = create_multiple_link(nrows,x,i,d,segment,4)
         
      
     return d
@@ -181,7 +203,7 @@ def get_places_coordinates(m):
     # count the number of links
     count_links=0
     count_single=0
-    while count_links <15.9 or count_single>0:
+    while count_links <20.9 or count_single>0:
     
         random.shuffle(grid)
                 
@@ -195,7 +217,7 @@ def get_places_coordinates(m):
         
         best_d = create_random_links(x,m)
         count_links=sum([sum(d) for d in best_d])/0.6
-        count_single=sum([1 for d in best_d if sum(d)/0.3<1])
+        count_single=sum([1 for d in best_d if sum(d)/0.3<=1])
         print(count_links,count_single)
 
     # now we add links until there is 17 real path
@@ -205,7 +227,7 @@ def get_places_coordinates(m):
     
     # finish with a simple Forced based drawing
     
-    for i in range(0,100):
+    for i in range(0,1000):
         x,v=forcedrawing(x,v,best_d)
     
     return x,best_d
