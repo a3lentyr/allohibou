@@ -106,8 +106,18 @@ def create_single_link(d,segment,x,next_list,i,num_max=3):
    
     if len(found_sorted)>0:
         j=found_sorted[0]
-        d[i][j]=.3
-        d[j][i]=.3
+        
+        col=[0,0,0]
+        for colindex in range(3):
+            col[colindex]=sum([1 for c in d[i] if c==(0.3+colindex*0.01)]) +sum([1 for c in d[j] if c==(0.3+colindex*0.01)])
+            
+        indices = [colenum for colenum, colindex in enumerate(col) if colindex == min(col)]  
+        random.shuffle(indices)
+        color = indices[0]*0.01
+        
+
+        d[i][j]=.3+color # passing color info within d
+        d[j][i]=d[i][j]
         segment.append([x[i] ,x[j]])
         next_list = get_ordered_list(next_list,x,j)
         d,segment=create_single_link(d,segment,x,next_list,j,num_max)
@@ -221,7 +231,7 @@ def get_places_coordinates(m):
     
     # finish with a simple Forced based drawing
     
-    for i in range(0,1000):
+    for i in range(0,700):
         x,v=forcedrawing(x,v,best_d)
     
     
@@ -258,17 +268,34 @@ def main():
     # forming list of places
     form_list=["triangle","carre","rond","losange"]
     color_list=["violet","orange","green"]
+    
     places_list=[]
     for form in form_list:
         for color in color_list:
             places_list.append(form+"-"+color)
-            
+    
     data_dict={}
     
     for name in places_list:
         name_file = open(name+".svg",'r')
         name_text = name_file.read()
         data_dict[name]=name_text
+        name_file.close()
+        
+    # forming list of marchandise    
+    form_list_m=["triangle","triangle","triangle","carre","rond","losange","losange"]
+    m_list=[]
+    for form in form_list_m:
+        for color in color_list:
+            m_list.append(form+"-"+color+"-m")
+    random.shuffle(form_list_m)
+            
+    data_dictm={}
+    
+    for name in m_list:
+        name_file = open(name+".svg",'r')
+        name_text = name_file.read()
+        data_dictm[name]=name_text
         name_file.close()
     
     # placing places
@@ -288,8 +315,10 @@ def main():
         trans_places.append([x,y])
         
     content_text=""
+    m_index=0
     # adding path
     shortened_list=[]
+    color_list=["red","blue","black"]
     for i,place_list in enumerate(d):
         for j,target in enumerate(place_list):
             if target>0 and j>i:
@@ -298,12 +327,23 @@ def main():
                 y1=trans_places[i][1]
                 x2=trans_places[j][0]
                 y2=trans_places[j][1]
-                if sum(place_list)/0.3>3 and sum(d[j])/0.3>3 and i not in shortened_list and j not in shortened_list:
+                color=color_list[int((target-0.3)*100)]
+                unique_color = (len([1 for c in d[i] if c==target]) <=1) # do not remove unique color
+                unique_color = (unique_color or len([1 for c in d[j] if c==target])<=1)
+                
+                if sum(place_list)/0.3>3 and sum(d[j])/0.3>3 and i not in shortened_list and j not in shortened_list and not unique_color:
                     x2=(x1+x2)/2
                     y2=(y1+y2)/2
                     shortened_list.append(i)
                     shortened_list.append(j)
-                content_text+= '<line x1="'+str(x1)+'" y1="'+str(y1)+'" x2="'+str(x2)+'" y2="'+str(y2)+'" stroke="black" />'                
+                content_text+= '<line x1="'+str(x1)+'" y1="'+str(y1)+'" x2="'+str(x2)+'" y2="'+str(y2)+'" stroke="'+color+'" />' 
+                
+                xm=(trans_places[i][0]+trans_places[j][0])/2
+                ym=(trans_places[i][1]+trans_places[j][1])/2
+                
+                content_text+='<g transform="translate('+str(xm)+','+str(ym)+')">' 
+                content_text+=data_dictm[m_list[m_index]]+'</g>' # m content
+                m_index+=1                
 
     # Adding places
     
