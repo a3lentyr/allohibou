@@ -3,6 +3,7 @@ import itertools as IT
 import os
 import random
 import math
+from math import sqrt
 
 # mass
 alpha = 1.0
@@ -62,7 +63,16 @@ def forcedrawing(x,v,d):
         x[i][1] += v[i][1] * delta_t
     return x,v
 
-def create_random_links(m):
+    
+def get_ordered_list(points, x_list, i):
+   x=x_list[i][0]
+   y=x_list[i][0]
+   points.sort(key = lambda p: sqrt((x_list[p][0] - x)**2 + (x_list[p][1] - y)**2))
+   return points
+   
+   
+# link creation and adjustment
+def create_random_links(x,m):
     d = []
     nrows = m
     ncols = m
@@ -72,81 +82,108 @@ def create_random_links(m):
             dr.append(.0)
         d.append(dr)
     
+    segment=[]
+                
     for i in xrange(nrows):
+        #print(" ----- Link : "+str(i))
         # count how many link already created
         links=sum(d[i])/0.3
         if links<3 and i<nrows-1:
             # create only links with latter nodes
-            next_list = range(i+1,nrows)
+            next_list = range(nrows)
             random.shuffle(next_list)
+            next_list = get_ordered_list(next_list,x,i)
             links_count=links
+            
+            # finding links that can be allocated
             for j in next_list:
                 links_next=sum(d[j])/0.3
-                if(links_count<3 and links_next<3):
-                    d[i][j]=.3
-                    d[j][i]=.3
-                    links_count+=1
+                if(i != j and links_count<3 and links_next<3):
+                    #print("candidate : "+str(j))
+                    inter=False
+                    for seg2 in segment:
+                        inter = inter or intersect(x[i],x[j],seg2[0],seg2[1])
+                        
+                    if not inter:
+                        d[i][j]=.3
+                        d[j][i]=.3
+                        links_count+=1
+                        segment.append([x[i] ,x[j]])
+                        #print(len(segment))
         
      
     return d
     
-def ccw(A,B,C):
-    return (C[1]-A[1]) * (B[0]-A[0]) > (B[1]-A[1]) * (C[0]-A[0])
+def onSegment(p, q, r):
+    if (q[0] <= max(p[0], r[0]) and q[0] >= min(p[0], r[0]) and q[1] <= max(p[1], r[1]) and q[1] >= min(p[1], r[1])): 
+       return True
+  
+    return False
+  
+def orientation(p, q, r):
+    val = (q[1] - p[1]) * (r[0] - q[0]) - (q[0] - p[0]) * (r[1] - q[1]) 
+  
+    if (val == 0):
+        return 0
+    
+    if (val > 0):
+        return 1
+    return 2
 
-# Return true if line segments AB and CD intersect
-def intersect(A,B,C,D):
-    return ccw(A,C,D) != ccw(B,C,D) and ccw(A,B,C) != ccw(A,B,D)
-    
-def score_link(x,d):
-    count=0
-    # make the list of segments
-    segment=[]
-    for i,pos in enumerate(x):
-        for j,target in enumerate(d[i]):
-            if target>0 and j>i:
-                segment.append([pos,x[j]])
-                
-    for i,seg1 in enumerate(segment):
-        for j,seg2 in enumerate(segment):
-            if j>i and intersect(seg1[0],seg1[1],seg2[0],seg2[1]):
-                count+=1
-    
-    return count
-    
-def find_best_links(x):
-    m=len(x)
-    best_d =[]
-    best_score=1000
-    
-    for test in range(0,200):
-        d = create_random_links(m)
-        s = score_link(x,d)
-        if best_score> s:
-            best_d = d
-            best_score = s
+  
+def intersect(p1, q1, p2, q2):
+    if (p1 == p2 or p1 == q2 or q1 == p2 or q1 == q2):
+        return False
+        
+    o1 = orientation(p1, q1, p2) 
+    o2 = orientation(p1, q1, q2) 
+    o3 = orientation(p2, q2, p1) 
+    o4 = orientation(p2, q2, q1)
+  
+    if (o1 != o2 and o3 != o4): 
+        #print("intersect")
+        return True 
+  
+    if (o1 == 0 and onSegment(p1, p2, q1)):
+        return True 
+  
+    if (o2 == 0 and onSegment(p1, q2, q1)):
+        return True 
+  
+    if (o3 == 0 and onSegment(p2, p1, q2)):
+        return True 
+  
+    if (o4 == 0 and onSegment(p2, q1, q2)):
+        return True 
+  
+    return False; 
 
-            
-    return best_d,best_score
     
-def get_places_coordinates(d):
-    m=len(d)
+    
+def get_places_coordinates(m):
     x = []
     v = []
-    best_score=1000
-    best_d = d
+    
+    # we generate a grid 4*4
+    grid=[]
+    for i in range(4):
+        for j in range(4):
+            grid.append([i/4.0,j/4.0])
+    random.shuffle(grid)
+            
+        
     for i in xrange(m):
-        xi = [random.random(), random.random()]
+        xi = grid[i]
         x.append(xi)
         v.append([0.0, 0.0])
 
+    best_d = create_random_links(x,m)
+    
+    # finish with a simple Forced based drawing
+    
     for i in range(0,200):
         x,v=forcedrawing(x,v,best_d)
-        d_test,score = find_best_links(x)
-        if score<best_score:
-            best_d=d_test
-            best_score=score
-        print(best_score)
-        
+    
     return x,best_d
     
         
@@ -194,8 +231,7 @@ def main():
         name_file.close()
     
     # placing places
-    d = create_random_links(len(places_list))
-    places_coord,d = get_places_coordinates(d)
+    places_coord,d = get_places_coordinates(len(places_list))
     
     # -- rescale such that everything is in 30:270 and 30:230
     minx=min([x[0] for x in places_coord])
