@@ -5,13 +5,15 @@ import random
 import math
 from math import sqrt
 
+random.seed(45)
+
 # mass
 alpha = 1.0
-beta = .002
-k = 0.08
+beta = 0.01 #1
+k = 0.008
 #damping
 eta = .99
-delta_t = .01
+delta_t = .001
 
     
 # force directed graph drawing
@@ -39,6 +41,9 @@ def Hooke_force(xi, xj, dij):
 def forcedrawing(x,v,d):
     m=len(x)
     ekint = [0.0, 0.0]
+    
+    segment=[[x[i],x[j]] for i in xrange(m) for j in xrange(m) if (d[i][j] != 0) ]
+    
     for i in xrange(m):
         Fx = 0.0
         Fy = 0.0
@@ -49,11 +54,20 @@ def forcedrawing(x,v,d):
             FijH = [0.0,0.0]
             
             FijC = Coulomb_force(x[i], x[j])
+            
             if dij != 0.0:
                 FijH = Hooke_force(x[i], x[j], dij)
                 
             Fx += FijC[0]+FijH[0]
             Fy += FijC[1]+FijH[1]
+
+        FijS=0
+        for s in segment:
+            if s[0]!= x[i] and s[1]!= x[i]:
+                FijS=Coulomb_force(x[i], [(s[0][0]+s[1][0])/2,(s[0][1]+s[1][1])/2] )
+                Fx += FijS[0]
+                Fy += FijS[1]
+
         v[i][0] = (v[i][0] + alpha * Fx * delta_t) * eta
         v[i][1] = (v[i][1] + alpha * Fy * delta_t) * eta
         ekint[0] = ekint[0] + alpha * (v[i][0] * v[i][0])
@@ -231,7 +245,7 @@ def get_places_coordinates(m):
     
     # finish with a simple Forced based drawing
     
-    for i in range(0,700):
+    for i in range(0,1000):
         x,v=forcedrawing(x,v,best_d)
     
     
@@ -254,7 +268,25 @@ def uniquify(path, sep = ''):
         fd, filename = tempfile.mkstemp(dir = dirname, prefix = filename, suffix = ext)
         tempfile._name_sequence = orig
     return filename
-
+    
+def dot(vA, vB):
+    return vA[0]*vB[0]+vA[1]*vB[1]
+def ang(lineA, lineB):
+    # Get nicer vector form
+    vA = [(lineA[0][0]-lineA[1][0]), (lineA[0][1]-lineA[1][1])]
+    vB = [(lineB[0][0]-lineB[1][0]), (lineB[0][1]-lineB[1][1])]
+    # Get dot prod
+    dot_prod = dot(vA, vB)
+    # Get magnitudes
+    magA = dot(vA, vA)**0.5
+    magB = dot(vB, vB)**0.5
+    # Get cosine value
+    cos_ = dot_prod/magA/magB
+    # Get angle in radians and then convert to degrees
+    angle = math.acos(dot_prod/magB/magA)
+    # Basically doing angle <- angle mod 360
+    ang_deg = math.degrees(angle)%360
+    return ang_deg
 
 def main():
     header = 'header.txt'
@@ -298,6 +330,16 @@ def main():
         data_dictm[name]=name_text
         name_file.close()
     
+    # forming list of road
+    road_list=["blue","red","yellow"]
+    data_dictr={}
+    
+    for name in road_list:
+        name_file = open(name+".svg",'r')
+        name_text = name_file.read()
+        data_dictr[name]=name_text
+        name_file.close()
+    
     # placing places
     places_coord,d = get_places_coordinates(len(places_list))
     
@@ -318,7 +360,7 @@ def main():
     m_index=0
     # adding path
     shortened_list=[]
-    color_list=["red","blue","black"]
+    color_list=["blue","red","black"]
     for i,place_list in enumerate(d):
         for j,target in enumerate(place_list):
             if target>0 and j>i:
@@ -331,6 +373,7 @@ def main():
                 unique_color = (len([1 for c in d[i] if c==target]) <=1) # do not remove unique color
                 unique_color = (unique_color or len([1 for c in d[j] if c==target])<=1)
                 
+                
                 if sum(place_list)/0.3>3 and sum(d[j])/0.3>3 and i not in shortened_list and j not in shortened_list and not unique_color:
                     x2=(x1+x2)/2
                     y2=(y1+y2)/2
@@ -338,12 +381,31 @@ def main():
                     shortened_list.append(j)
                 content_text+= '<line x1="'+str(x1)+'" y1="'+str(y1)+'" x2="'+str(x2)+'" y2="'+str(y2)+'" stroke="'+color+'" />' 
                 
+                
+                # road graphism
+                
+                rotate_factor= ang([[x1,y1],[x2,y2]],[ [0,0],[1,0] ]) #*(x2-x1)/abs(x2-x1)*(y2-y1)/abs(y2-y1)
+                if y1>y2 :
+                    rotate_factor= ang([[x1,y1],[x2,y2]],[ [0,0],[-1,0] ])
+ 
+                single_width = 10.0 # length of the path in road file
+                road_length=sqrt((x2-x1)**2+(y2-y1)**2)
+                road_num=int(road_length/single_width)+1 # how many time it should be pasted
+                
+                for road_index in range(road_num):
+                    xrm=(x1*(road_num-road_index-1.0)+x2*(road_index+1.0))/road_num
+                    yrm=(y1*(road_num-road_index-1.0)+y2*(road_index+1.0))/road_num
+                    content_text+='<g transform="translate('+str(xrm)+','+str(yrm)+') rotate('+str(rotate_factor)+') ">' 
+                    content_text+=data_dictr[road_list[int((target-0.3)*100)]]+'</g>' # m content
+                    
+                
                 xm=(trans_places[i][0]+trans_places[j][0])/2
                 ym=(trans_places[i][1]+trans_places[j][1])/2
                 
-                content_text+='<g transform="translate('+str(xm)+','+str(ym)+')">' 
-                content_text+=data_dictm[m_list[m_index]]+'</g>' # m content
-                m_index+=1                
+                if m_index<len(m_list):
+                    content_text+='<g transform="translate('+str(xm)+','+str(ym)+')">' 
+                    content_text+=data_dictm[m_list[m_index]]+'</g>' # m content
+                    m_index+=1                
 
     # Adding places
     
