@@ -5,7 +5,7 @@ import random
 import math
 from math import sqrt
 
-random.seed(45)
+#random.seed(45)
 
 # mass
 alpha = 1.0
@@ -281,6 +281,10 @@ def ang(lineA, lineB):
     magA = dot(vA, vA)**0.5
     magB = dot(vB, vB)**0.5
     # Get cosine value
+    if magA == 0:
+        return 90.0
+    if magB == 0:
+        return 90.0
     cos_ = dot_prod/magA/magB
     # Get angle in radians and then convert to degrees
     angle = math.acos(dot_prod/magB/magA)
@@ -340,6 +344,12 @@ def main():
         data_dictr[name]=name_text
         name_file.close()
     
+    # loading background
+    
+    tree_file = open("tree.svg",'r')
+    tree_text = tree_file.read()
+    tree_file.close()
+    
     # placing places
     places_coord,d = get_places_coordinates(len(places_list))
     
@@ -352,15 +362,17 @@ def main():
     
     trans_places=[]
     for pair_coord in places_coord:
-        x= int((pair_coord[0]-minx)*(270-30)/(maxx-minx)+30) #random.randint(30,270)
-        y= int((pair_coord[1]-miny)*(250-30)/(maxy-miny)+30) #random.randint(30,230)
+        x= int((pair_coord[0]-minx)*(280-25)/(maxx-minx)+25) #random.randint(30,270)
+        y= int((pair_coord[1]-miny)*(250-25)/(maxy-miny)+25) #random.randint(30,230)
         trans_places.append([x,y])
         
     content_text=""
     m_index=0
     # adding path
     shortened_list=[]
+    road_places_list=[]
     color_list=["blue","red","black"]
+    
     for i,place_list in enumerate(d):
         for j,target in enumerate(place_list):
             if target>0 and j>i:
@@ -379,7 +391,7 @@ def main():
                     y2=(y1+y2)/2
                     shortened_list.append(i)
                     shortened_list.append(j)
-                content_text+= '<line x1="'+str(x1)+'" y1="'+str(y1)+'" x2="'+str(x2)+'" y2="'+str(y2)+'" stroke="'+color+'" />' 
+                #content_text+= '<line x1="'+str(x1)+'" y1="'+str(y1)+'" x2="'+str(x2)+'" y2="'+str(y2)+'" stroke="'+color+'" />' 
                 
                 
                 # road graphism
@@ -395,6 +407,9 @@ def main():
                 for road_index in range(road_num):
                     xrm=(x1*(road_num-road_index-1.0)+x2*(road_index+1.0))/road_num
                     yrm=(y1*(road_num-road_index-1.0)+y2*(road_index+1.0))/road_num
+
+                    road_places_list.append([xrm,yrm])
+
                     content_text+='<g transform="translate('+str(xrm)+','+str(yrm)+') rotate('+str(rotate_factor)+') ">' 
                     content_text+=data_dictr[road_list[int((target-0.3)*100)]]+'</g>' # m content
                     
@@ -414,7 +429,30 @@ def main():
         y= trans_places[i][1]
         content_text+='<g transform="translate('+str(x)+','+str(y)+')">' # placing it
         content_text+=data_dict[name]+'</g>' # content
-        
+
+    # Adding background
+    for x_index in range(0,300,10):
+        for y_index in range(0,280,10):
+            x=x_index+4*random.random()
+            y=y_index-4*random.random()
+            rand_tree=random.random()
+            if rand_tree>0.3:
+                # should not be placed under places nor roads
+                is_under=False
+                for p in trans_places:
+                    if sqrt((p[0]-x-10)**2+(p[1]-y-10)**2 )<25:
+                        is_under=True
+                        break
+                        
+                if not is_under:
+                    for p in road_places_list:
+                        if sqrt((p[0]-x-10)**2+(p[1]-y-10)**2 )<10:
+                            is_under=True
+                            break
+
+                if not is_under:
+                    content_text='<g transform="translate('+str(x)+','+str(y)+')  scale(0.03,0.03)">'+tree_text+'</g>'+content_text
+    
     # Creating file
     new_path = uniquify('file.svg')
     new_file = open(new_path,'w')
@@ -424,6 +462,7 @@ def main():
     new_file.close()
     footer_file.close()
     header_file.close()
+    print(new_path)
   
 if __name__== "__main__":
   main()
