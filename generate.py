@@ -227,7 +227,7 @@ def get_places_coordinates(m):
     # count the number of links
     count_links=0
     count_single=0
-    while count_links <20.9 or count_single>0:
+    while count_links <20.9 or count_links >22.2 or count_single>0:
     
         random.shuffle(grid)
                 
@@ -290,7 +290,12 @@ def ang(lineA, lineB):
     angle = math.acos(dot_prod/magB/magA)
     # Basically doing angle <- angle mod 360
     ang_deg = math.degrees(angle)%360
-    return ang_deg
+    if ang_deg-180>=0:
+        # As in if statement
+        return 360 - ang_deg
+    else: 
+
+        return ang_deg
 
 def main():
     header = 'header.txt'
@@ -344,11 +349,7 @@ def main():
         data_dictr[name]=name_text
         name_file.close()
     
-    # loading background
     
-    tree_file = open("tree.svg",'r')
-    tree_text = tree_file.read()
-    tree_file.close()
     
     # placing places
     places_coord,d = get_places_coordinates(len(places_list))
@@ -431,32 +432,83 @@ def main():
         content_text+=data_dict[name]+'</g>' # content
 
     # Adding background
-    for x_index in range(0,300,10):
-        for y_index in range(0,280,10):
+    # -- stones
+    stones_file = open("stones.svg",'r')
+    stones_text = stones_file.read()
+    stones_file.close()
+    
+    rand_num=int(random.random()*2+1) #number of stone cluster
+    stone_text=""
+    for stone_index in range(0,rand_num):
+        x=random.random()*300
+        y=random.random()*250
+        trans_places.append([x,y])
+        # cluster is one big and 1 to 3 smalls
+        stone_text+='<g transform="translate('+str(x-20)+','+str(y-20)+')  scale(0.1,0.1)">'+stones_text+'</g>'
+
+        rand_num_small=int(random.random()*2+1) #number of stone cluster
+        for stone_indexs in range(0,rand_num):
+            xs=x+random.random()*40
+            ys=y+10+random.random()*20
+            trans_places.append([xs,ys])
+            stone_text+='<g transform="translate('+str(xs-20)+','+str(ys-20)+')  scale(0.05,0.05)">'+stones_text+'</g>'
+    
+            
+    # -- castle
+    
+    castle_file = open("castle.svg",'r')
+    castle_text = castle_file.read()
+    castle_file.close()
+
+    x=random.random()*300
+    y=random.random()*250
+    trans_places.append([x,y-10])# hide under trees
+    stone_text+='<g transform="translate('+str(x-20)+','+str(y-20)+')  scale(0.05,0.05)">'+castle_text+'</g>'
+
+    # -- hut
+    
+    hut_file = open("hut.svg",'r')
+    hut_text = hut_file.read()
+    hut_file.close()
+
+    x=random.random()*300
+    y=random.random()*270
+    road_places_list.append([x,y-10])# hide under trees
+    stone_text+='<g transform="translate('+str(x-10)+','+str(y-20)+')  scale(0.03,0.03)">'+hut_text+'</g>'
+
+            
+    # -- trees
+    
+    tree_file = open("tree.svg",'r')
+    tree_text = tree_file.read()
+    tree_file.close()
+    for x_index in range(0,300,5):
+        for y_index in range(270,0,-5):
             x=x_index+4*random.random()
             y=y_index-4*random.random()
             rand_tree=random.random()
-            if rand_tree>0.3:
+            if rand_tree>0.6:
                 # should not be placed under places nor roads
                 is_under=False
                 for p in trans_places:
-                    if sqrt((p[0]-x-10)**2+(p[1]-y-10)**2 )<25:
+                    if sqrt((p[0]-x-10)**2+(p[1]-y-5)**2 )<25:
                         is_under=True
                         break
                         
                 if not is_under:
                     for p in road_places_list:
-                        if sqrt((p[0]-x-10)**2+(p[1]-y-10)**2 )<10:
+                        if sqrt((p[0]-x-10)**2+(p[1]-y-5)**2 )<10:
                             is_under=True
                             break
 
                 if not is_under:
-                    content_text='<g transform="translate('+str(x)+','+str(y)+')  scale(0.03,0.03)">'+tree_text+'</g>'+content_text
-    
+                    content_text='<g transform="translate('+str(x)+','+str(y)+')  scale(0.03,0.03)" fill="rgb(50,'+str(50+random.random()*50)+',50)">'+tree_text+'</g>'+content_text
+
+
     # Creating file
     new_path = uniquify('file.svg')
     new_file = open(new_path,'w')
-    title = header_text+content_text+footer_text
+    title = header_text+stone_text+content_text+footer_text
     new_file.write(title)
 
     new_file.close()
