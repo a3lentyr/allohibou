@@ -45,8 +45,8 @@ def forcedrawing(x,v,d):
     segment=[[x[i],x[j]] for i in xrange(m) for j in xrange(m) if (d[i][j] != 0) ]
     
     for i in xrange(m):
-        Fx = 0.0
-        Fy = 0.0
+        Fx = 0.0+random.random()*0.1
+        Fy = 0.0+random.random()*0.1
         for j in xrange(m):
             if j == 1:
                 continue
@@ -386,10 +386,14 @@ def main():
                 unique_color = (len([1 for c in d[i] if c==target]) <=1) # do not remove unique color
                 unique_color = (unique_color or len([1 for c in d[j] if c==target])<=1)
                 
+                xm=(trans_places[i][0]+trans_places[j][0])/2
+                ym=(trans_places[i][1]+trans_places[j][1])/2
                 
                 if sum(place_list)/0.3>3 and sum(d[j])/0.3>3 and i not in shortened_list and j not in shortened_list and not unique_color:
                     x2=(x1+x2)/2
                     y2=(y1+y2)/2
+                    xm=x2
+                    ym=y2
                     shortened_list.append(i)
                     shortened_list.append(j)
                 #content_text+= '<line x1="'+str(x1)+'" y1="'+str(y1)+'" x2="'+str(x2)+'" y2="'+str(y2)+'" stroke="'+color+'" />' 
@@ -401,7 +405,7 @@ def main():
                 if y1>y2 :
                     rotate_factor= ang([[x1,y1],[x2,y2]],[ [0,0],[-1,0] ])
  
-                single_width = 10.0 # length of the path in road file
+                single_width = 14.0 # length of the path in road file
                 road_length=sqrt((x2-x1)**2+(y2-y1)**2)
                 road_num=int(road_length/single_width)+1 # how many time it should be pasted
                 
@@ -415,8 +419,6 @@ def main():
                     content_text+=data_dictr[road_list[int((target-0.3)*100)]]+'</g>' # m content
                     
                 
-                xm=(trans_places[i][0]+trans_places[j][0])/2
-                ym=(trans_places[i][1]+trans_places[j][1])/2
                 
                 if m_index<len(m_list):
                     content_text+='<g transform="translate('+str(xm)+','+str(ym)+')">' 
@@ -437,7 +439,7 @@ def main():
     stones_text = stones_file.read()
     stones_file.close()
     
-    rand_num=int(random.random()*2+1) #number of stone cluster
+    rand_num=int(random.random()*3+1) #number of stone cluster
     stone_text=""
     for stone_index in range(0,rand_num):
         x=random.random()*300
@@ -454,16 +456,6 @@ def main():
             stone_text+='<g transform="translate('+str(xs-20)+','+str(ys-20)+')  scale(0.05,0.05)">'+stones_text+'</g>'
     
             
-    # -- castle
-    
-    castle_file = open("castle.svg",'r')
-    castle_text = castle_file.read()
-    castle_file.close()
-
-    x=random.random()*300
-    y=random.random()*250
-    trans_places.append([x,y-10])# hide under trees
-    stone_text+='<g transform="translate('+str(x-20)+','+str(y-20)+')  scale(0.05,0.05)">'+castle_text+'</g>'
 
     # -- stadium
     
@@ -489,6 +481,17 @@ def main():
 
     # -- castle
     
+    castle_file = open("castle.svg",'r')
+    castle_text = castle_file.read()
+    castle_file.close()
+
+    x=random.random()*300
+    y=random.random()*250
+    trans_places.append([x,y-10])# hide under trees
+    stone_text+='<g transform="translate('+str(x-20)+','+str(y-20)+')  scale(0.05,0.05)">'+castle_text+'</g>'
+
+    # -- cow
+    
     cow_file = open("cow.svg",'r')
     cow_text = cow_file.read()
     cow_file.close()
@@ -508,8 +511,8 @@ def main():
     tree_file = open("tree.svg",'r')
     tree_text = tree_file.read()
     tree_file.close()
-    for x_index in range(0,300,5):
-        for y_index in range(270,0,-5):
+    for x_index in range(-10,300,5):
+        for y_index in range(270,-10,-5):
             x=x_index+4*random.random()
             y=y_index-4*random.random()
             rand_tree=random.random()
