@@ -447,7 +447,7 @@ def main():
         stone_text+='<g transform="translate('+str(x-20)+','+str(y-20)+')  scale(0.1,0.1)">'+stones_text+'</g>'
 
         rand_num_small=int(random.random()*2+1) #number of stone cluster
-        for stone_indexs in range(0,rand_num):
+        for stone_indexs in range(0,rand_num_small):
             xs=x+random.random()*40
             ys=y+10+random.random()*20
             trans_places.append([xs,ys])
@@ -465,6 +465,17 @@ def main():
     trans_places.append([x,y-10])# hide under trees
     stone_text+='<g transform="translate('+str(x-20)+','+str(y-20)+')  scale(0.05,0.05)">'+castle_text+'</g>'
 
+    # -- stadium
+    
+    stadium_file = open("stadium.svg",'r')
+    stadium_text = stadium_file.read()
+    stadium_file.close()
+
+    x=random.random()*300
+    y=random.random()*250
+    trans_places.append([x,y-10])
+    stone_text+='<g transform="translate('+str(x-10)+','+str(y-20)+')  scale(0.05,0.05)">'+stadium_text+'</g>'
+
     # -- hut
     
     hut_file = open("hut.svg",'r')
@@ -475,6 +486,21 @@ def main():
     y=random.random()*270
     road_places_list.append([x,y-10])# hide under trees
     stone_text+='<g transform="translate('+str(x-10)+','+str(y-20)+')  scale(0.03,0.03)">'+hut_text+'</g>'
+
+    # -- castle
+    
+    cow_file = open("cow.svg",'r')
+    cow_text = cow_file.read()
+    cow_file.close()
+
+    x=random.random()*300
+    y=random.random()*250
+    rand_num_small=int(random.random()*5+1)
+    for cow_indexs in range(0,rand_num_small):
+        xs=x+random.random()*20
+        ys=y+10+random.random()*20
+        road_places_list.append([xs,ys])
+        stone_text+='<g transform="translate('+str(xs)+','+str(ys)+')  scale(0.03,0.03)">'+cow_text+'</g>'
 
             
     # -- trees
