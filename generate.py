@@ -6,6 +6,7 @@ import math
 from math import sqrt
 from lib import fbd, links
 
+from noise import pnoise2,snoise2
 
 # random.seed(45)
 
@@ -169,12 +170,12 @@ def draw_roads(trans_places, d):
     return content_text, road_places_list, march_places_list
 
 
-def draw_cluster(forbid_places, name, scale=0.1, cluster_scale=0.05, num_min=1, num_max=3, cluster_min=1, cluster_max=2, offset_x=20,
+def draw_cluster(forbid_places, name, scale_min=0.05, scale_max=0.1, num_min=1, num_max=3, cluster_min=1, cluster_max=2, offset_x=20,
                  offset_y=20, offset_height=40, offset_width=20):
     stones_text = load_svg(name)
     trans_places = []
 
-    rand_num = int(random.random() * num_max + num_min)  # number of stone cluster
+    rand_num = random.randint(0, num_max) + num_min  # number of stone cluster
     content_text = ""
     for stone_index in range(0, rand_num):
         # check for collision
@@ -184,23 +185,32 @@ def draw_cluster(forbid_places, name, scale=0.1, cluster_scale=0.05, num_min=1, 
             y = random.random() * 250
             is_under = False
             for p in forbid_places:
-                if sqrt((p[0] - x - offset_x) ** 2 + (p[1] - y - offset_y) ** 2) < 10:
+                if sqrt((p[0] - x + offset_x) ** 2 + (p[1] - y + offset_y) ** 2) < (10+max(offset_width,offset_height)):
                     is_under = True
                     break
 
-        trans_places.append([x - offset_x, y - offset_y])
-        # cluster is one big and 1 to 3 smalls
-        content_text += '<g transform="translate(' + str(x - offset_x) + ',' + str(
-            y - offset_y) + ')  scale(' + str(scale) + ',' + str(scale) + ')">' + stones_text + '</g>'
+        rand_num_small = random.randint(0, cluster_max) + cluster_min
 
-        rand_num_small = int(random.random() * cluster_max + cluster_min)  # number of stone cluster
-        for stone_indexs in range(0, rand_num_small):
-            xs = x + offset_x / 2 + random.random() * offset_height
-            ys = y + offset_y / 2 + random.random() * offset_width
-            trans_places.append([xs - offset_x, ys - offset_y])
-            content_text += '<g transform="translate(' + str(xs - offset_x) + ',' + str(
-                ys - offset_y) + ')  scale(' + str(cluster_scale) + ',' + str(
-                cluster_scale) + ')">' + stones_text + '</g>'
+        perlin_list=[]
+        for y in range(0,offset_width,10):
+            for x in range(0,offset_height,10):
+                perlin_list.append((x,y,snoise2(x / 16.0, y / 16.0, 1)))
+        perlin_list.sort(key=lambda tup: tup[2])
+
+        for stone_indexes in perlin_list[0:rand_num_small]:
+            xs = x - offset_height / 2 + stone_indexes[0]
+            ys = y - offset_width / 2 + stone_indexes[1]
+            trans_places.append([xs, ys])
+
+    # filter places from front to back
+    trans_places.sort(key=lambda tup: tup[1])
+    for p in trans_places:
+        xs = p[0]+ 2 * random.random()
+        ys = p[1]+ 2 * random.random()
+        scale = random.uniform(scale_min,scale_max)
+        content_text += '<g transform="translate(' + str(xs - offset_x) + ',' + str(
+            ys - offset_y) + ')  scale(' + str(scale) + ',' + str(
+            scale) + ')">' + stones_text + '</g>'
 
     return content_text, trans_places
 
@@ -214,7 +224,7 @@ def draw_trees(trans_places, road_places_list):
             x = x_index + 4 * random.random()
             y = y_index - 4 * random.random()
             rand_tree = random.random()
-            if rand_tree > 0.8:
+            if rand_tree > 0.6:
                 # should not be placed under places nor roads
                 is_under = False
                 for p in trans_places:
@@ -249,12 +259,11 @@ def main():
     trans_places += trans_places_cluster
 
     # Minor background
-    hut_text, trans_places_cluster = draw_cluster(road_places_list, "hut", 0.03, 0.0, 1, 1, 0, 0, 10, 10)
+    hut_text, trans_places_cluster = draw_cluster(road_places_list, "hut", 0.03, 0.03, 1, 1, 0, 20, 10,10,70,70)
     road_places_list += trans_places_cluster
     cow_text, trans_places_cluster = draw_cluster(road_places_list, "cow", 0.03, 0.0, 1, 1, 1, 5, 20, 20, 20, 20)
     road_places_list += trans_places_cluster
 
-    tree_text_back = draw_trees(trans_places, road_places_list)
     tree_text = draw_trees(trans_places, road_places_list)
 
     # Creating file
@@ -263,7 +272,7 @@ def main():
 
     header = load_svg("header")
     footer = load_svg("footer")
-    title = header + stones_text + roads_text + tree_text_back + stadium_text + hut_text + castle_text + cow_text + tree_text + places_text + march_text + footer
+    title = header + stones_text + roads_text +  stadium_text + hut_text + castle_text + cow_text + tree_text + places_text + march_text + footer
     new_file.write(title)
 
     new_file.close()

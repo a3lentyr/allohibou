@@ -2,48 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="5c1ddbd5-f4c6-4981-ad43-c6f66397b6fc" name="Default" comment="">
-      <change beforePath="" afterPath="$PROJECT_DIR$/.idea/vcs.xml" />
-      <change beforePath="$PROJECT_DIR$/Map-back.svg" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/Map-v2-clean.svg" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/Map-v2-clean2.svg" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/Map-v2.svg" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/blue.svg" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/carre-green-m.svg" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/carre-green.svg" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/carre-orange-m.svg" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/carre-orange.svg" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/carre-violet-m.svg" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/carre-violet.svg" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/castle.svg" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/cow.svg" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/footer.txt" afterPath="" />
       <change beforePath="$PROJECT_DIR$/generate.py" afterPath="$PROJECT_DIR$/generate.py" />
-      <change beforePath="$PROJECT_DIR$/header.txt" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/hut.svg" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/losange-green-m.svg" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/losange-green.svg" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/losange-orange-m.svg" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/losange-orange.svg" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/losange-violet-m.svg" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/losange-violet.svg" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/places.svg" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/red.svg" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/rond-green-m.svg" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/rond-green.svg" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/rond-orange-m.svg" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/rond-orange.svg" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/rond-violet-m.svg" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/rond-violet.svg" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/stadium.svg" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/stones.svg" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/tree.svg" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/triangle-green-m.svg" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/triangle-green.svg" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/triangle-orange-m.svg" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/triangle-orange.svg" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/triangle-violet-m.svg" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/triangle-violet.svg" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/yellow.svg" afterPath="" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -81,8 +40,8 @@
       <file leaf-file-name="generate.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/generate.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="532">
-              <caret line="197" column="21" lean-forward="true" selection-start-line="197" selection-start-column="21" selection-end-line="197" selection-end-column="33" />
+            <state relative-caret-position="574">
+              <caret line="261" column="97" lean-forward="false" selection-start-line="261" selection-start-column="97" selection-end-line="261" selection-end-column="97" />
               <folding>
                 <element signature="e#0#15#0" expanded="true" />
               </folding>
@@ -240,8 +199,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/generate.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="532">
-          <caret line="197" column="21" lean-forward="true" selection-start-line="197" selection-start-column="21" selection-end-line="197" selection-end-column="33" />
+        <state relative-caret-position="574">
+          <caret line="261" column="97" lean-forward="false" selection-start-line="261" selection-start-column="97" selection-end-line="261" selection-end-column="97" />
           <folding>
             <element signature="e#0#15#0" expanded="true" />
           </folding>
