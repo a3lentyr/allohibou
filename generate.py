@@ -7,8 +7,27 @@ from math import sqrt
 from lib import fbd, links
 
 from noise import pnoise2,snoise2
-
+import re
 # random.seed(45)
+
+
+class DrawObject:
+    def __init__(self, x_, y_, type_, color_, margin_, size_, rotate_factor_= 0, overlay_=False):
+        self.x = x_
+        self.y = y_
+        self.type = type_
+        self.margin = margin_
+        self.color = color_
+        self.size = size_
+        self.rotate_factor = rotate_factor_
+        self.overlay = overlay_
+
+
+class SvgObject:
+    def __init__(self, name, svg_cache):
+        if not name in svg_cache:
+            svg_cache[name] = load_svg(name)
+        self.text = svg_cache[name]
 
 
 # return a unique file name
@@ -30,15 +49,18 @@ def uniquify(path, sep=''):
     return filename
 
 
-def load_svg(name):
+def load_svg(name,noreplace=False):
     name_file = open("img/" + name + ".svg", 'r')
     name_text = name_file.read()
+    if not noreplace:
+        name_text = re.sub(r"<\?xml.*</metadata>", "", name_text,flags=re.DOTALL)
+        name_text = re.sub(r"</svg>", "", name_text,flags=re.DOTALL)
     name_file.close()
 
     return name_text
 
 
-def draw_places():
+def draw_places(draw_array):
     # forming list of places
     form_list = ["triangle", "carre", "rond", "losange"]
     color_list = ["violet", "orange", "green"]
@@ -48,10 +70,6 @@ def draw_places():
         for color in color_list:
             places_list.append(form + "-" + color)
 
-    data_dict = {}
-
-    for name in places_list:
-        data_dict[name] = load_svg(name)
 
     # placing places
     places_coord, d = links.get_places_coordinates(len(places_list))
@@ -70,17 +88,15 @@ def draw_places():
 
     # Adding places
 
-    content_text = ""
     for i, name in enumerate(places_list):
         x = trans_places[i][0]
         y = trans_places[i][1]
-        content_text += '<g transform="translate(' + str(x) + ',' + str(y) + ')">'  # placing it
-        content_text += data_dict[name] + '</g>'  # content
+        draw_array.append(DrawObject(x, y, name, "", 25, 1, 0, True))
 
-    return content_text, trans_places, d
+    return trans_places, d
 
 
-def draw_marchandise(road_places_list):
+def draw_marchandise(road_places_list, draw_array):
     # forming list of marchandise
     form_list_m = ["triangle", "triangle", "triangle", "carre", "rond", "losange", "losange"]
     color_list = ["violet", "orange", "green"]
@@ -90,38 +106,23 @@ def draw_marchandise(road_places_list):
             m_list.append(form + "-" + color + "-m")
     random.shuffle(form_list_m)
 
-    data_dictm = {}
-
-    for name in m_list:
-        data_dictm[name] = load_svg(name)
-
     m_index = 0
-    content_text = ""
     for road in road_places_list:
         if m_index < len(m_list):
             xm = road[0]
             ym = road[1]
-            content_text += '<g transform="translate(' + str(xm) + ',' + str(ym) + ')">'
-            content_text += data_dictm[m_list[m_index]] + '</g>'  # m content
+            draw_array.append(DrawObject(xm, ym, m_list[m_index], "", 15, 1, 0, True))
             m_index += 1
 
-    return content_text
 
-
-def draw_roads(trans_places, d):
+def draw_roads(trans_places, d, draw_array):
     # forming list of road
     road_list = ["blue", "red", "yellow"]
-    data_dictr = {}
-
-    for name in road_list:
-        data_dictr[name] = load_svg(name)
 
     # adding path
     shortened_list = []
     road_places_list = []
     march_places_list = []
-
-    content_text = ""
 
     for i, place_list in enumerate(d):
         for j, target in enumerate(place_list):
@@ -162,17 +163,13 @@ def draw_roads(trans_places, d):
                     yrm = (y1 * (road_num - road_index - 1.0) + y2 * (road_index + 1.0)) / road_num
 
                     road_places_list.append([xrm, yrm])
+                    draw_array.append(DrawObject(xrm, yrm, road_list[int((target - 0.3) * 100)], "", 10, 1,rotate_factor))
 
-                    content_text += '<g transform="translate(' + str(xrm) + ',' + str(yrm) + ') rotate(' + str(
-                        rotate_factor) + ') ">'
-                    content_text += data_dictr[road_list[int((target - 0.3) * 100)]] + '</g>'  # m content
-
-    return content_text, road_places_list, march_places_list
+    return road_places_list, march_places_list
 
 
-def draw_cluster(forbid_places, name, scale_min=0.05, scale_max=0.1, num_min=1, num_max=3, cluster_min=1, cluster_max=2, offset_x=20,
-                 offset_y=20, offset_height=40, offset_width=20):
-    stones_text = load_svg(name)
+def draw_cluster(draw_array, name, scale_min=0.05, scale_max=0.1, num_min=1, num_max=3, cluster_min=1, cluster_max=2, offset_height=40, offset_width=20):
+
     trans_places = []
 
     rand_num = random.randint(0, num_max) + num_min  # number of stone cluster
@@ -184,17 +181,17 @@ def draw_cluster(forbid_places, name, scale_min=0.05, scale_max=0.1, num_min=1, 
             x = random.random() * 300
             y = random.random() * 250
             is_under = False
-            for p in forbid_places:
-                if sqrt((p[0] - x + offset_x) ** 2 + (p[1] - y + offset_y) ** 2) < (10+max(offset_width,offset_height)):
+            for p in draw_array:
+                if sqrt((p.x - x ) ** 2 + (p.y - y ) ** 2) < p.margin:
                     is_under = True
                     break
 
         rand_num_small = random.randint(0, cluster_max) + cluster_min
 
         perlin_list=[]
-        for y in range(0,offset_width,10):
-            for x in range(0,offset_height,10):
-                perlin_list.append((x,y,snoise2(x / 16.0, y / 16.0, 1)))
+        for y in range(0, offset_width, 10):
+            for x in range(0, offset_height, 10):
+                perlin_list.append((x, y, snoise2(x / 16.0, y / 16.0, 1)))
         perlin_list.sort(key=lambda tup: tup[2])
 
         for stone_indexes in perlin_list[0:rand_num_small]:
@@ -205,74 +202,75 @@ def draw_cluster(forbid_places, name, scale_min=0.05, scale_max=0.1, num_min=1, 
     # filter places from front to back
     trans_places.sort(key=lambda tup: tup[1])
     for p in trans_places:
-        xs = p[0]+ 2 * random.random()
-        ys = p[1]+ 2 * random.random()
-        scale = random.uniform(scale_min,scale_max)
-        content_text += '<g transform="translate(' + str(xs - offset_x) + ',' + str(
-            ys - offset_y) + ')  scale(' + str(scale) + ',' + str(
-            scale) + ')">' + stones_text + '</g>'
+        xs = p[0] + 2 * random.random()
+        ys = p[1] + 2 * random.random()
+        scale = random.uniform(scale_min, scale_max)
+        draw_array.append(DrawObject(xs, ys, name, "", 10, scale))
 
     return content_text, trans_places
 
 
-def draw_trees(trans_places, road_places_list):
-    tree_text = load_svg("tree")
+def place_trees(draw_array):
 
-    content_text=""
     for x_index in range(-10, 300, 5):
         for y_index in range(270, -10, -5):
             x = x_index + 4 * random.random()
             y = y_index - 4 * random.random()
-            rand_tree = random.random()
-            if rand_tree > 0.6:
-                # should not be placed under places nor roads
+            if random.random() > 0.6:
                 is_under = False
-                for p in trans_places:
-                    if sqrt((p[0] - x - 10) ** 2 + (p[1] - y - 10) ** 2) < 25:
+                for p in draw_array:
+                    if sqrt((p.x - x) ** 2 + (p.y - y) ** 2) < p.margin:
                         is_under = True
                         break
-
                 if not is_under:
-                    for p in road_places_list:
-                        if sqrt((p[0] - x - 10) ** 2 + (p[1] - y - 10) ** 2) < 10:
-                            is_under = True
-                            break
+                    color = "rgb(50," + str(50 + random.random() * 50) + ",50)"
+                    draw_array.append(DrawObject(x, y, "tree", color, 0, 0.03))
 
-                if not is_under:
-                    content_text = '<g transform="translate(' + str(x) + ',' + str(
-                        y) + ')  scale(0.03,0.03)" fill="rgb(50,' + str(
-                        50 + random.random() * 50) + ',50)">' + tree_text + '</g>' + content_text
-    return content_text
+
+def draw(draw_array, svg_cache):
+    content_text=""
+    overlay_text=""
+    for d in draw_array:
+        text = SvgObject(d.type, svg_cache).text
+        data_text = '<g transform="translate(' + str(d.x) + ',' + str(
+            d.y) + ')  scale(' + str(d.size) + ',' + str(d.size)+') rotate(' + str(
+                        d.rotate_factor) + ')" fill="' + d.color + '">' + text + '</g>'
+        if d.overlay:
+            overlay_text += data_text
+        else:
+            content_text += data_text
+
+    return content_text, overlay_text
 
 
 def main():
-    places_text, trans_places, d = draw_places()
-    roads_text, road_places_list, march_places_list = draw_roads(trans_places, d)
-    march_text = draw_marchandise(march_places_list)
+    draw_array = []
+    svg_cache = {}
+    trans_places, d = draw_places(draw_array)
+    road_places_list, march_places_list = draw_roads(trans_places, d, draw_array)
+    draw_marchandise(march_places_list,draw_array)
+
 
     # Adding background
-    stones_text, trans_places_cluster = draw_cluster(road_places_list, "stones")
-    trans_places += trans_places_cluster
-    stadium_text, trans_places_cluster = draw_cluster(road_places_list, "stadium", 0.05, 0.0, 1, 1, 0, 0)
-    trans_places += trans_places_cluster
-    castle_text, trans_places_cluster = draw_cluster(road_places_list, "castle", 0.05, 0.0, 1, 1, 0, 0, 20, 20)
-    trans_places += trans_places_cluster
+    draw_cluster(draw_array, "stones")
+    draw_cluster(draw_array, "stadium", 0.05, 0.0, 1, 1, 0, 0)
+    draw_cluster(draw_array, "castle", 0.05, 0.0, 1, 1, 0, 0)
 
     # Minor background
-    hut_text, trans_places_cluster = draw_cluster(road_places_list, "hut", 0.03, 0.03, 1, 1, 0, 20, 10,10,70,70)
-    road_places_list += trans_places_cluster
-    cow_text, trans_places_cluster = draw_cluster(road_places_list, "cow", 0.03, 0.0, 1, 1, 1, 5, 20, 20, 20, 20)
-    road_places_list += trans_places_cluster
+    #hut_text, trans_places_cluster = draw_cluster(road_places_list, "hut", 0.03, 0.03, 1, 1, 0, 20, 10,10,70,70)
+    draw_cluster(draw_array, "cow", 0.03, 0.0, 1, 1, 1, 5, 20, 20)
 
-    tree_text = draw_trees(trans_places, road_places_list)
+    place_trees(draw_array)
+    draw_array.sort(key=lambda p: p.y)
+    tree_text, overlay_text = draw(draw_array, svg_cache)
 
     # Creating file
     new_path = uniquify('file.svg')
     new_file = open(new_path, 'w')
 
-    header = load_svg("header")
-    footer = load_svg("footer")
-    title = header + stones_text + roads_text +  stadium_text + hut_text + castle_text + cow_text + tree_text + places_text + march_text + footer
+    header = load_svg("header", True)
+    footer = load_svg("footer", True)
+    title = header + tree_text + overlay_text + footer
     new_file.write(title)
 
     new_file.close()
