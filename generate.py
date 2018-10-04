@@ -177,9 +177,12 @@ def draw_cluster(draw_array, name, scale_min=0.05, scale_max=0.1, num_min=1, num
     for stone_index in range(0, rand_num):
         # check for collision
         is_under = True
+        print(" ---- "+name)
+        x = 0
+        y = 0
         while is_under:
-            x = random.random() * 300
             y = random.random() * 250
+            x = random.random() * 300
             is_under = False
             for p in draw_array:
                 if sqrt((p.x - x ) ** 2 + (p.y - y ) ** 2) < p.margin:
@@ -189,15 +192,16 @@ def draw_cluster(draw_array, name, scale_min=0.05, scale_max=0.1, num_min=1, num
         rand_num_small = random.randint(0, cluster_max) + cluster_min
 
         perlin_list=[]
-        for y in range(0, offset_width, 10):
-            for x in range(0, offset_height, 10):
-                perlin_list.append((x, y, snoise2(x / 16.0, y / 16.0, 1)))
+        for y_off in range(0, offset_width, 10):
+            for x_off in range(0, offset_height, 10):
+                perlin_list.append((x_off, y_off, snoise2(x_off / 16.0, y_off / 16.0, 1)))
         perlin_list.sort(key=lambda tup: tup[2])
 
         for stone_indexes in perlin_list[0:rand_num_small]:
             xs = x - offset_height / 2 + stone_indexes[0]
             ys = y - offset_width / 2 + stone_indexes[1]
             trans_places.append([xs, ys])
+            print(xs,ys)
 
     # filter places from front to back
     trans_places.sort(key=lambda tup: tup[1])
@@ -258,7 +262,7 @@ def main():
 
     # Minor background
     #hut_text, trans_places_cluster = draw_cluster(road_places_list, "hut", 0.03, 0.03, 1, 1, 0, 20, 10,10,70,70)
-    draw_cluster(draw_array, "cow", 0.03, 0.0, 1, 1, 1, 5, 20, 20)
+    draw_cluster(draw_array, "cow", 0.03, 0.04, 1, 1, 1, 5, 20, 20)
 
     place_trees(draw_array)
     draw_array.sort(key=lambda p: p.y)
