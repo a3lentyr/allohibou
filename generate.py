@@ -12,7 +12,7 @@ import re
 
 
 class DrawObject:
-    def __init__(self, x_, y_, type_, color_, margin_, size_, rotate_factor_= 0, overlay_=False):
+    def __init__(self, x_, y_, type_, color_, margin_, size_, rotate_factor_= 0, overlay_=False, opacity_=1):
         self.x = x_
         self.y = y_
         self.type = type_
@@ -21,6 +21,7 @@ class DrawObject:
         self.size = size_
         self.rotate_factor = rotate_factor_
         self.overlay = overlay_
+        self.opacity = opacity_
 
 
 class SvgObject:
@@ -163,7 +164,7 @@ def draw_roads(trans_places, d, draw_array):
                     yrm = (y1 * (road_num - road_index - 1.0) + y2 * (road_index + 1.0)) / road_num
 
                     road_places_list.append([xrm, yrm])
-                    draw_array.append(DrawObject(xrm, yrm, road_list[int((target - 0.3) * 100)], "", 10, 1,rotate_factor))
+                    draw_array.append(DrawObject(xrm, yrm, road_list[int((target - 0.3) * 100)], "", 13, 1, rotate_factor))
 
     return road_places_list, march_places_list
 
@@ -172,12 +173,11 @@ def draw_cluster(draw_array, name, scale_min=0.05, scale_max=0.1, num_min=1, num
 
     trans_places = []
 
-    rand_num = random.randint(0, num_max) + num_min  # number of stone cluster
+    rand_num = random.randint(0, num_max-num_min) + num_min  # number of stone cluster
     content_text = ""
     for stone_index in range(0, rand_num):
         # check for collision
         is_under = True
-        print(" ---- "+name)
         x = 0
         y = 0
         while is_under:
@@ -185,11 +185,11 @@ def draw_cluster(draw_array, name, scale_min=0.05, scale_max=0.1, num_min=1, num
             x = random.random() * 300
             is_under = False
             for p in draw_array:
-                if sqrt((p.x - x ) ** 2 + (p.y - y ) ** 2) < p.margin:
+                if sqrt((p.x - x ) ** 2 + (p.y - y ) ** 2) < p.margin+10: # own margin
                     is_under = True
                     break
 
-        rand_num_small = random.randint(0, cluster_max) + cluster_min
+        rand_num_small = random.randint(0, cluster_max-cluster_min) + cluster_min
 
         perlin_list=[]
         for y_off in range(0, offset_width, 10):
@@ -201,7 +201,6 @@ def draw_cluster(draw_array, name, scale_min=0.05, scale_max=0.1, num_min=1, num
             xs = x - offset_height / 2 + stone_indexes[0]
             ys = y - offset_width / 2 + stone_indexes[1]
             trans_places.append([xs, ys])
-            print(xs,ys)
 
     # filter places from front to back
     trans_places.sort(key=lambda tup: tup[1])
@@ -216,11 +215,11 @@ def draw_cluster(draw_array, name, scale_min=0.05, scale_max=0.1, num_min=1, num
 
 def place_trees(draw_array):
 
-    for x_index in range(-10, 300, 5):
+    for x_index in range(-10, 310, 5):
         for y_index in range(270, -10, -5):
             x = x_index + 4 * random.random()
             y = y_index - 4 * random.random()
-            if random.random() > 0.6:
+            if random.random() > 0.4:
                 is_under = False
                 for p in draw_array:
                     if sqrt((p.x - x) ** 2 + (p.y - y) ** 2) < p.margin:
@@ -228,7 +227,8 @@ def place_trees(draw_array):
                         break
                 if not is_under:
                     color = "rgb(50," + str(50 + random.random() * 50) + ",50)"
-                    draw_array.append(DrawObject(x, y, "tree", color, 0, 0.03))
+                    size = random.uniform(0.02, 0.03)
+                    draw_array.append(DrawObject(x, y, "tree", color, 0, size))
 
 
 def draw(draw_array, svg_cache):
@@ -238,7 +238,7 @@ def draw(draw_array, svg_cache):
         text = SvgObject(d.type, svg_cache).text
         data_text = '<g transform="translate(' + str(d.x) + ',' + str(
             d.y) + ')  scale(' + str(d.size) + ',' + str(d.size)+') rotate(' + str(
-                        d.rotate_factor) + ')" fill="' + d.color + '">' + text + '</g>'
+                        d.rotate_factor) + ')" fill="' + d.color + '" style="opacity:' + str(d.opacity)+';">' + text + '</g>'
         if d.overlay:
             overlay_text += data_text
         else:
@@ -257,12 +257,17 @@ def main():
 
     # Adding background
     draw_cluster(draw_array, "stones")
-    draw_cluster(draw_array, "stadium", 0.05, 0.0, 1, 1, 0, 0)
-    draw_cluster(draw_array, "castle", 0.05, 0.0, 1, 1, 0, 0)
+
+    # Adding unique feature
+    feature = [("stadium", 0.03, 0.05), ("castle", 0.03, 0.05), ("moais", 0.02, 0.03), ("dragon", 0.01, 0.02),
+               ("columns", 0.02, 0.03), ("grave", 0.01, 0.02), ("treasure", 0.01, 0.02), ("tower", 0.02, 0.03),
+               ("emblem", 0.01, 0.02)]
+    for f in feature:
+        draw_cluster(draw_array, f[0], f[1], f[2], 1, 1, 1, 1)
 
     # Minor background
-    #hut_text, trans_places_cluster = draw_cluster(road_places_list, "hut", 0.03, 0.03, 1, 1, 0, 20, 10,10,70,70)
-    draw_cluster(draw_array, "cow", 0.03, 0.04, 1, 1, 1, 5, 20, 20)
+    draw_cluster(draw_array, "hut", 0.02, 0.03, 1, 3, 1, 10, 50, 50)
+    draw_cluster(draw_array, "cow", 0.01, 0.02, 1, 2, 1, 5, 20, 20)
 
     place_trees(draw_array)
     draw_array.sort(key=lambda p: p.y)
