@@ -8,7 +8,7 @@ from lib import fbd, links
 
 from noise import pnoise2,snoise2
 import re
-# random.seed(45)
+#random.seed(44)
 
 
 class DrawObject:

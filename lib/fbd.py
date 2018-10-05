@@ -28,6 +28,8 @@ def hooke_force(xi, xj, dij):
     dx = xj[0] - xi[0]
     dy = xj[1] - xi[1]
     ds = math.sqrt(dx * dx + dy * dy)
+    if ds ==0:
+        ds=random.random() # handle corner case
     dl = ds - dij
     const = k * dl / ds
     return [const * dx, const * dy]
@@ -53,8 +55,10 @@ def forcedrawing(x, v, d):
             if dij != 0.0:
                 FijH = hooke_force(x[i], x[j], dij)
 
+
             Fx += FijC[0] + FijH[0]
             Fy += FijC[1] + FijH[1]
+
 
         for s in segment:
             if s[0] != x[i] and s[1] != x[i]:

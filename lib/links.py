@@ -175,6 +175,17 @@ def get_places_coordinates(m):
     for i in range(0, 1000):
         x, v = fbd.forcedrawing(x, v, best_d)
 
+    # check for deviation
+    deviation=False
+    for place in x:
+        if place[0]<-10 or place[0]>10 or place[1]<-10 or place[1]>10:
+            deviation = True
+            break
+
+    if deviation :
+        #print("deviation")
+        return get_places_coordinates(m)
+
     return x, best_d
 
 def dot(vA, vB):
