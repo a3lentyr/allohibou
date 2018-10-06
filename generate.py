@@ -11,6 +11,18 @@ import re
 #random.seed(44)
 
 
+class StyleParameter:
+    def __init__(self, background_color_ = "rgb(100,100,50)", tree_color_ = 50,size_factor_=1, opacity_factor_=1, style_path_="lib/"):
+        self.background_color = background_color_
+        self.size_factor = size_factor_
+        self.opacity_factor = opacity_factor_
+        self.style_path = style_path_
+        self.tree_color = tree_color_
+
+
+globalStyle = StyleParameter("rgb(224 ,205 ,162)", 140, 2, 0.8)
+# globalStyle = StyleParameter()
+
 class DrawObject:
     def __init__(self, x_, y_, type_, color_, margin_, size_, rotate_factor_= 0, overlay_=False, opacity_=1):
         self.x = x_
@@ -97,7 +109,7 @@ def draw_places(draw_array):
     return trans_places, d
 
 
-def draw_marchandise(road_places_list, draw_array):
+def draw_marchandise(march_places_list, draw_array):
     # forming list of marchandise
     form_list_m = ["triangle", "triangle", "triangle", "carre", "rond", "losange", "losange"]
     color_list = ["violet", "orange", "green"]
@@ -108,11 +120,13 @@ def draw_marchandise(road_places_list, draw_array):
     random.shuffle(form_list_m)
 
     m_index = 0
-    for road in road_places_list:
+    for march in march_places_list:
         if m_index < len(m_list):
-            xm = road[0]
-            ym = road[1]
+            xm = march[0]
+            ym = march[1]
             draw_array.append(DrawObject(xm, ym, m_list[m_index], "", 15, 1, 0, True))
+            if march[2]:
+                draw_array.append(DrawObject(xm, ym+1, "close", "black", 0, 0.4, 90*random.random(),False,0.5))
             m_index += 1
 
 
@@ -138,7 +152,7 @@ def draw_roads(trans_places, d, draw_array):
 
                 xm = (trans_places[i][0] + trans_places[j][0]) / 2
                 ym = (trans_places[i][1] + trans_places[j][1]) / 2
-
+                is_middle = False
                 if sum(place_list) / 0.3 > 3 and sum(
                         d[j]) / 0.3 > 3 and i not in shortened_list and j not in shortened_list and not unique_color:
                     x2 = (x1 + x2) / 2
@@ -147,8 +161,9 @@ def draw_roads(trans_places, d, draw_array):
                     ym = y2
                     shortened_list.append(i)
                     shortened_list.append(j)
+                    is_middle = True
 
-                march_places_list.append([xm, ym])
+                march_places_list.append([xm, ym, is_middle])
 
                 # road graphism
                 rotate_factor = links.ang([[x1, y1], [x2, y2]], [[0, 0], [1, 0]])
@@ -164,7 +179,7 @@ def draw_roads(trans_places, d, draw_array):
                     yrm = (y1 * (road_num - road_index - 1.0) + y2 * (road_index + 1.0)) / road_num
 
                     road_places_list.append([xrm, yrm])
-                    draw_array.append(DrawObject(xrm, yrm, road_list[int((target - 0.3) * 100)], "", 13, 1, rotate_factor))
+                    draw_array.append(DrawObject(xrm, yrm, road_list[int((target - 0.3) * 100)], "", 10, 1, rotate_factor))
 
     return road_places_list, march_places_list
 
@@ -208,7 +223,7 @@ def draw_cluster(draw_array, name, scale_min=0.05, scale_max=0.1, num_min=1, num
         xs = p[0] + 2 * random.random()
         ys = p[1] + 2 * random.random()
         scale = random.uniform(scale_min, scale_max)
-        draw_array.append(DrawObject(xs, ys, name, "", 10, scale))
+        draw_array.append(DrawObject(xs, ys, name, "", 5, scale/globalStyle.size_factor, 0, False, globalStyle.opacity_factor))
 
     return content_text, trans_places
 
@@ -219,15 +234,15 @@ def place_trees(draw_array):
         for y_index in range(270, -10, -5):
             x = x_index + 4 * random.random()
             y = y_index - 4 * random.random()
-            if random.random() > 0.4:
+            if random.random() > 0.1:
                 is_under = False
                 for p in draw_array:
                     if sqrt((p.x - x) ** 2 + (p.y - y) ** 2) < p.margin:
                         is_under = True
                         break
                 if not is_under:
-                    color = "rgb(50," + str(50 + random.random() * 50) + ",50)"
-                    size = random.uniform(0.02, 0.03)
+                    color = "rgb("+str(globalStyle.tree_color)+"," + str(globalStyle.tree_color + random.random() * 50) + ","+str(int(globalStyle.tree_color*0.7))+")"
+                    size = random.uniform(0.02, 0.03) / globalStyle.size_factor
                     draw_array.append(DrawObject(x, y, "tree", color, 0, size))
 
 
@@ -277,9 +292,15 @@ def main():
     new_path = uniquify('file.svg')
     new_file = open(new_path, 'w')
 
-    header = load_svg("header", True)
-    footer = load_svg("footer", True)
-    title = header + tree_text + overlay_text + footer
+    header = load_svg("header", True) + '<rect width="100%" height="100%" fill="'+globalStyle.background_color+'"/>'
+
+    path = ""
+    #    for i in range(0,50):
+    #        path+="T "+random
+    #header += '<path d = "M10 80 Q 52.5 10, 95 80 T 180 80" stroke="rgb(150,150,180)"  fill="transparent"/>'
+
+    footer = load_svg("footer")
+    title = header + tree_text + overlay_text + footer+'</svg>'
     new_file.write(title)
 
     new_file.close()
