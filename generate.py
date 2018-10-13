@@ -130,6 +130,12 @@ def draw_marchandise(march_places_list, draw_array):
             m_index += 1
 
 
+def bezier(x1, y1, xc, yc, x2, y2, t):
+    x = (1-t)*((1-t)*x1+t*xc)+t*((1-t)*xc+t*x2)
+    y = (1-t)*((1-t)*y1+t*yc)+t*((1-t)*yc+t*y2)
+    return x, y
+
+
 def draw_roads(trans_places, d, draw_array):
     # forming list of road
     road_list = ["blue", "red", "yellow"]
@@ -150,8 +156,10 @@ def draw_roads(trans_places, d, draw_array):
                 unique_color = (len([1 for c in d[i] if c == target]) <= 1)  # do not remove unique color
                 unique_color = (unique_color or len([1 for c in d[j] if c == target]) <= 1)
 
+
                 xm = (trans_places[i][0] + trans_places[j][0]) / 2
                 ym = (trans_places[i][1] + trans_places[j][1]) / 2
+
                 is_middle = False
                 if sum(place_list) / 0.3 > 3 and sum(
                         d[j]) / 0.3 > 3 and i not in shortened_list and j not in shortened_list and not unique_color:
@@ -162,26 +170,49 @@ def draw_roads(trans_places, d, draw_array):
                     shortened_list.append(i)
                     shortened_list.append(j)
                     is_middle = True
-
-                march_places_list.append([xm, ym, is_middle])
-
-                # road graphism
-                rotate_factor = links.ang([[x1, y1], [x2, y2]], [[0, 0], [1, 0]])
-                if y1 > y2:
-                    rotate_factor = links.ang([[x1, y1], [x2, y2]], [[0, 0], [-1, 0]])
-
-                single_width = 14.0  # length of the path in road file
-                road_length = sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
-                road_num = int(road_length / single_width) + 1  # how many time it should be pasted
-
-                for road_index in range(road_num):
-                    xrm = (x1 * (road_num - road_index - 1.0) + x2 * (road_index + 1.0)) / road_num
-                    yrm = (y1 * (road_num - road_index - 1.0) + y2 * (road_index + 1.0)) / road_num
-
-                    road_places_list.append([xrm, yrm])
-                    draw_array.append(DrawObject(xrm, yrm, road_list[int((target - 0.3) * 100)], "", 10, 1, rotate_factor))
+                compute_road_position(x1, y1, x2, y2, xm,ym,is_middle, road_list, march_places_list, road_places_list, target, draw_array)
 
     return road_places_list, march_places_list
+
+
+def compute_road_position(x1,y1,x2,y2,xm,ym,is_middle,road_list,march_places_list,road_places_list, target, draw_array):
+    tc = -20
+    ax = 10000
+    if y2 != y1:
+        ax = (x2 - x1) / (y2 - y1)
+    ay = 10000
+    if x2 != x1:
+        ay = (y2 - y1) / (x2 - x1)
+
+    xc = (x1 + x2) / 2 + tc * ay / (ax + ay)
+    yc = (y1 + y2) / 2 + tc * ax / (ax + ay)
+
+    if not is_middle:
+        xm, ym = bezier(x1, y1, xc, yc, x2, y2, 0.5)
+    march_places_list.append([xm, ym, is_middle])
+
+    # road graphism
+
+    single_width = 14.0 + 2.0  # length of the path in road file
+    road_length = sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+    control_length = sqrt((xc - x1) ** 2 + (yc - y1) ** 2) + sqrt((x2 - xc) ** 2 + (y2 - yc) ** 2)
+
+    road_num = int((road_length + control_length) / (2 * single_width)) + 1
+    # how many time it should be pasted, average between curve and control
+
+    for road_index in range(road_num):
+        t = (road_index * 1.0) / road_num
+        xrm, yrm = bezier(x1, y1, xc, yc, x2, y2, t)
+
+        xrmp, yrmp = bezier(x1, y1, xc, yc, x2, y2, t - 1.0 / road_num)
+        xrmn, yrmn = bezier(x1, y1, xc, yc, x2, y2, t + 1.0 / road_num)
+
+        rotate_factor = links.ang([[xrmp, yrmp], [xrmn, yrmn]], [[0, 0], [1, 0]])
+        if yrmp > yrmn:
+            rotate_factor = links.ang([[xrmp, yrmp], [xrmn, yrmn]], [[0, 0], [-1, 0]])
+
+        road_places_list.append([xrm, yrm])
+        draw_array.append(DrawObject(xrm, yrm, road_list[int((target - 0.3) * 100)], "", 10, 1, rotate_factor))
 
 
 def draw_cluster(draw_array, name, scale_min=0.05, scale_max=0.1, num_min=1, num_max=3, cluster_min=1, cluster_max=2, offset_height=40, offset_width=20):
