@@ -8,7 +8,7 @@ from lib import fbd, links
 
 from noise import pnoise2,snoise2
 import re
-#random.seed(44)
+# random.seed(44)
 
 
 class StyleParameter:
@@ -145,38 +145,67 @@ def draw_roads(trans_places, d, draw_array):
     road_places_list = []
     march_places_list = []
 
+    road_places_list_ref = []
     for i, place_list in enumerate(d):
         for j, target in enumerate(place_list):
             if target > 0 and j > i:
-                # path between 4 and 4 are only drawn as half
-                x1 = trans_places[i][0]
-                y1 = trans_places[i][1]
-                x2 = trans_places[j][0]
-                y2 = trans_places[j][1]
-                unique_color = (len([1 for c in d[i] if c == target]) <= 1)  # do not remove unique color
-                unique_color = (unique_color or len([1 for c in d[j] if c == target]) <= 1)
+                x1, y1, x2, y2, xm, ym, is_middle = compute_roads_parameters(trans_places, i, j, target, d, place_list, [])
 
+                # For bezier tuning, we make a first allocation for dummy placing
+                intersect_num, mar_return, road_return, draw_return = compute_road_position(x1, y1, x2, y2, xm, ym, is_middle, road_list, target, [], 0)
+                road_places_list_ref.append(road_return)
 
-                xm = (trans_places[i][0] + trans_places[j][0]) / 2
-                ym = (trans_places[i][1] + trans_places[j][1]) / 2
+    counter = 0
+    for i, place_list in enumerate(d):
+        for j, target in enumerate(place_list):
+            if target > 0 and j > i:
+                x1, y1, x2, y2, xm, ym, is_middle = compute_roads_parameters(trans_places, i, j, target, d, place_list, shortened_list)
 
-                is_middle = False
-                if sum(place_list) / 0.3 > 3 and sum(
-                        d[j]) / 0.3 > 3 and i not in shortened_list and j not in shortened_list and not unique_color:
-                    x2 = (x1 + x2) / 2
-                    y2 = (y1 + y2) / 2
-                    xm = x2
-                    ym = y2
-                    shortened_list.append(i)
-                    shortened_list.append(j)
-                    is_middle = True
-                compute_road_position(x1, y1, x2, y2, xm,ym,is_middle, road_list, march_places_list, road_places_list, target, draw_array)
+                testing_road = []
+                for road_test_index in range(10):
+                    tc = -30 + 6 * road_test_index
+                    road_list_concat = [r for road in road_places_list_ref[:counter - 1] for r in road] + \
+                                       [r for road in road_places_list_ref[counter + 1:] for r in road]
+                    testing_road.append(compute_road_position(x1, y1, x2, y2, xm, ym, is_middle, road_list, target, road_list_concat, tc) )
+
+                testing_road.sort(key=lambda x: x[0], reverse=True)
+                intersect_num, mar_return, road_return, draw_return = testing_road[0]
+
+                march_places_list.append(mar_return)
+                road_places_list += road_return
+                draw_array += draw_return
+                counter += 1
 
     return road_places_list, march_places_list
 
 
-def compute_road_position(x1,y1,x2,y2,xm,ym,is_middle,road_list,march_places_list,road_places_list, target, draw_array):
-    tc = -20
+def compute_roads_parameters(trans_places, i, j, target, d, place_list, shortened_list):
+    # path between 4 and 4 are only drawn as half
+    x1 = trans_places[i][0]
+    y1 = trans_places[i][1]
+    x2 = trans_places[j][0]
+    y2 = trans_places[j][1]
+    unique_color = (len([1 for c in d[i] if c == target]) <= 1)  # do not remove unique color
+    unique_color = (unique_color or len([1 for c in d[j] if c == target]) <= 1)
+
+    xm = (trans_places[i][0] + trans_places[j][0]) / 2
+    ym = (trans_places[i][1] + trans_places[j][1]) / 2
+
+    is_middle = False
+    if sum(place_list) / 0.3 > 3 and sum(
+            d[j]) / 0.3 > 3 and i not in shortened_list and j not in shortened_list and not unique_color:
+        x2 = (x1 + x2) / 2
+        y2 = (y1 + y2) / 2
+        xm = x2
+        ym = y2
+        shortened_list.append(i)
+        shortened_list.append(j)
+        is_middle = True
+    return x1, y1, x2, y2, xm, ym, is_middle
+
+
+def compute_road_position(x1, y1, x2, y2, xm, ym, is_middle, road_list, target, road_places_list, tc):
+
     ax = 10000
     if y2 != y1:
         ax = (x2 - x1) / (y2 - y1)
@@ -189,7 +218,7 @@ def compute_road_position(x1,y1,x2,y2,xm,ym,is_middle,road_list,march_places_lis
 
     if not is_middle:
         xm, ym = bezier(x1, y1, xc, yc, x2, y2, 0.5)
-    march_places_list.append([xm, ym, is_middle])
+    mar_return = [xm, ym, is_middle]
 
     # road graphism
 
@@ -199,6 +228,10 @@ def compute_road_position(x1,y1,x2,y2,xm,ym,is_middle,road_list,march_places_lis
 
     road_num = int((road_length + control_length) / (2 * single_width)) + 1
     # how many time it should be pasted, average between curve and control
+
+    road_return = []
+    draw_return = []
+    distance_num = 0
 
     for road_index in range(road_num):
         t = (road_index * 1.0) / road_num
@@ -211,8 +244,15 @@ def compute_road_position(x1,y1,x2,y2,xm,ym,is_middle,road_list,march_places_lis
         if yrmp > yrmn:
             rotate_factor = links.ang([[xrmp, yrmp], [xrmn, yrmn]], [[0, 0], [-1, 0]])
 
-        road_places_list.append([xrm, yrm])
-        draw_array.append(DrawObject(xrm, yrm, road_list[int((target - 0.3) * 100)], "", 10, 1, rotate_factor))
+        road_return.append([xrm, yrm])
+        draw_return.append(DrawObject(xrm, yrm, road_list[int((target - 0.3) * 100)], "", 10, 1, rotate_factor))
+
+        # compute distance to other roads
+        for other_road in road_places_list:
+            dist = -1/(1+sqrt((other_road[0] - xrm)**2 + (other_road[1] - yrm)**2))
+            distance_num += dist
+
+    return distance_num, mar_return, road_return, draw_return
 
 
 def draw_cluster(draw_array, name, scale_min=0.05, scale_max=0.1, num_min=1, num_max=3, cluster_min=1, cluster_max=2, offset_height=40, offset_width=20):
