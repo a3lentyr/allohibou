@@ -163,7 +163,7 @@ def draw_roads(trans_places, d, draw_array):
 
                 testing_road = []
                 for road_test_index in range(10):
-                    tc = -30 + 6 * road_test_index
+                    tc = -40 + 8 * road_test_index
                     road_list_concat = [r for road in road_places_list_ref[:counter - 1] for r in road] + \
                                        [r for road in road_places_list_ref[counter + 1:] for r in road]
                     testing_road.append(compute_road_position(x1, y1, x2, y2, xm, ym, is_middle, road_list, target, road_list_concat, tc) )
