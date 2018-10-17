@@ -4,7 +4,7 @@ import os
 import random
 import math
 from math import sqrt
-from lib import fbd, links
+from lib import fbd, links, name
 
 from noise import pnoise2,snoise2
 import re
@@ -41,6 +41,32 @@ class SvgObject:
         if not name in svg_cache:
             svg_cache[name] = load_svg(name)
         self.text = svg_cache[name]
+
+
+type_list = ["Academy", "Brotherhood", "Circle", "College", "Consortium", "Fellowship", "Guild", "Institute", "League",
+             "School", "Union", "University"]
+adj_list = ["", "Central", "Druidical", "Educational", "Graduate", "National", "Normal", "Northern", "Polytechnic",
+            "Sorcerous", "Southern", "Supernatural", "Teachers"]
+field_list = ["Magic", "Sorcery", "Witchcraft", "Wizardry", "Necromancy", "Enchantment", "Spellworking", "Incantation",
+              "Supernatural", "Occultism", "Occult", "Black Magic", "Black Arts", "Devilry", "Divination",
+              "Malediction", "Voodoo", "Sympathetic Magic", "White Magic", "Witching", "Witchery", "Charm", "Hex",
+              "Spell", "Sortilege", "Thaumaturgy"]
+
+
+def generate_name():
+    # name is schema {place) (adj) (type) or (place) (type) of (noun)
+    name_place = name.MName().New()
+    name_adj = random.choice(adj_list)
+    name_type = random.choice(type_list)
+    name_field = random.choice(field_list)
+    if random.random() > 0.5:
+        return name_place+" "+name_adj , name_type+" of "+name_field
+    return name_place+" "+name_field ,name_type
+
+
+school_name, school_second = generate_name()
+print(school_name+" "+school_second)
+random.seed(school_name+school_second)
 
 
 # return a unique file name
@@ -371,7 +397,9 @@ def main():
     #header += '<path d = "M10 80 Q 52.5 10, 95 80 T 180 80" stroke="rgb(150,150,180)"  fill="transparent"/>'
 
     footer = load_svg("footer")
-    title = header + tree_text + overlay_text + footer+'</svg>'
+    title = '<text x="310" y="15" textLength="120" style="font: bold italic 9px Tahoma; fill:grey;" >'+school_name+'</text>'
+    title += '<text x="310" y="30" textLength="120" style="font: bold italic 9px Tahoma; fill:grey;" >'+school_second+'</text>'
+    title = header + tree_text + overlay_text + footer + title + '</svg>'
     new_file.write(title)
 
     new_file.close()
