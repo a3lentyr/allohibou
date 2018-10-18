@@ -43,14 +43,19 @@ class SvgObject:
         self.text = svg_cache[name]
 
 
-type_list = ["Academy", "Brotherhood", "Circle", "College", "Consortium", "Fellowship", "Guild", "Institute", "League",
-             "School", "Union", "University"]
-adj_list = ["", "Central", "Druidical", "Educational", "Graduate", "National", "Normal", "Northern", "Polytechnic",
-            "Sorcerous", "Southern", "Supernatural", "Teachers"]
-field_list = ["Magic", "Sorcery", "Witchcraft", "Wizardry", "Necromancy", "Enchantment", "Spellworking", "Incantation",
-              "Supernatural", "Occultism", "Occult", "Black Magic", "Black Arts", "Devilry", "Divination",
-              "Malediction", "Voodoo", "Sympathetic Magic", "White Magic", "Witching", "Witchery", "Charm", "Hex",
-              "Spell", "Sortilege", "Thaumaturgy"]
+type_list = ["Academy", "Assembly", "Association", "Brotherhood", "Center", "Circle", "College", "Consortium",
+             "Corporation", "Conclave",  "Establishment", "Fellowship", "Forum", "Foundation", "Guild",
+             "Institute", "Institution", "League", "Order", "School",  "Sisterhood", "Society", "Union", "University"]
+
+adj_list = ["", "Applied", "Central", "Cryptic", "Druidical", "Educational", "Engineering", "Federal", "First",
+            "Graduate", "High","Imperial", "Master", "Mystical", "National", "Normal", "Northern", "Polytechnic",
+            "Practical", "Prime", "Private", "Principal", "Regional", "Royal", "Secret", "Scientific"
+            "Sorcerous", "Southern", "Specialized", "Supernatural", "Teachers", "Technical", "Technological", "Universal"]
+
+field_list = ["Black Magic", "Black Arts", "Charm", "Devilry", "Divination", "Enchantment",  "Hex", "Incantation", "Magic",
+              "Malediction", "Necromancy", "Occultism", "Occult", "Spell", "Spellworking", "Sortilege",  "Sorcery",
+              "Supernatural", "Sympathetic Magic", "Thaumaturgy", "Voodoo",  "White Magic", "Witching", "Witchery",
+              "Witchcraft", "Wizardry"]
 
 
 def generate_name():
@@ -401,7 +406,7 @@ def main():
     #header += '<path d = "M10 80 Q 52.5 10, 95 80 T 180 80" stroke="rgb(150,150,180)"  fill="transparent"/>'
 
     footer = load_svg("footer")
-    title = '<text x="370" y="18" text-anchor="middle" font-family="Tahoma" font-size="12" font-weight="bold" fill="darkgrey" >'+school_name+'</text>'
+    title = '<text x="370" y="18" text-anchor="middle" font-family="Old English Text MT" font-size="12" font-weight="bold" fill="darkgrey" >'+school_name+'</text>'
     title += '<text x="370" y="30" text-anchor="middle" font-family="Tahoma" font-size="6" font-style="italic" fill="grey" >'+school_second+'</text>'
     title = header + tree_text + overlay_text + footer + title + '</svg>'
     new_file.write(title)
