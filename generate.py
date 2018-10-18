@@ -56,17 +56,21 @@ field_list = ["Magic", "Sorcery", "Witchcraft", "Wizardry", "Necromancy", "Encha
 def generate_name():
     # name is schema {place) (adj) (type) or (place) (type) of (noun)
     name_place = name.MName().New()
+    return name_place
+
+
+def generate_second_name():
     name_adj = random.choice(adj_list)
     name_type = random.choice(type_list)
     name_field = random.choice(field_list)
     if random.random() > 0.5:
-        return name_place+" "+name_adj , name_type+" of "+name_field
-    return name_place+" "+name_field ,name_type
+        return name_adj + " " + name_type+" of "+name_field
+    return name_field + " " + name_type
 
 
-school_name, school_second = generate_name()
-print(school_name+" "+school_second)
-random.seed(school_name+school_second)
+school_name = generate_name()
+random.seed(school_name)
+school_second = generate_second_name()
 
 
 # return a unique file name
@@ -397,8 +401,8 @@ def main():
     #header += '<path d = "M10 80 Q 52.5 10, 95 80 T 180 80" stroke="rgb(150,150,180)"  fill="transparent"/>'
 
     footer = load_svg("footer")
-    title = '<text x="310" y="15" textLength="120" style="font: bold italic 9px Tahoma; fill:grey;" >'+school_name+'</text>'
-    title += '<text x="310" y="30" textLength="120" style="font: bold italic 9px Tahoma; fill:grey;" >'+school_second+'</text>'
+    title = '<text x="370" y="18" text-anchor="middle" font-family="Tahoma" font-size="12" font-weight="bold" fill="darkgrey" >'+school_name+'</text>'
+    title += '<text x="370" y="30" text-anchor="middle" font-family="Tahoma" font-size="6" font-style="italic" fill="grey" >'+school_second+'</text>'
     title = header + tree_text + overlay_text + footer + title + '</svg>'
     new_file.write(title)
 
