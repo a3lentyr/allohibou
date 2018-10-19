@@ -10,18 +10,19 @@ from noise import pnoise2,snoise2
 import re
 # random.seed(44)
 
+from flask import Flask
+app = Flask(__name__)
 
 class StyleParameter:
-    def __init__(self, background_color_ = "rgb(100,100,50)", tree_color_ = 50,size_factor_=1, opacity_factor_=1, style_path_="lib/"):
+    def __init__(self, background_color_ = "rgb(100,100,50)", tree_color_ = 50, tree_path_ = "tree", size_factor_=1, opacity_factor_=1, style_path_="lib/"):
         self.background_color = background_color_
         self.size_factor = size_factor_
         self.opacity_factor = opacity_factor_
         self.style_path = style_path_
         self.tree_color = tree_color_
+        self.tree_path = tree_path_
 
 
-globalStyle = StyleParameter("rgb(224 ,205 ,162)", 140, 2, 0.8)
-# globalStyle = StyleParameter()
 
 class DrawObject:
     def __init__(self, x_, y_, type_, color_, margin_, size_, rotate_factor_= 0, overlay_=False, opacity_=1):
@@ -49,13 +50,17 @@ type_list = ["Academy", "Assembly", "Association", "Brotherhood", "Center", "Cir
 
 adj_list = ["", "Applied", "Central", "Cryptic", "Druidical", "Educational", "Engineering", "Federal", "First",
             "Graduate", "High","Imperial", "Master", "Mystical", "National", "Normal", "Northern", "Polytechnic",
-            "Practical", "Prime", "Private", "Principal", "Regional", "Royal", "Secret", "Scientific"
-            "Sorcerous", "Southern", "Specialized", "Supernatural", "Teachers", "Technical", "Technological", "Universal"]
+            "Practical", "Prime", "Private", "Principal", "Regional", "Royal", "Secret", "Scientific",
+            "Sorcerous", "Southern", "Specialized", "Teachers", "Technical", "Technological", "Universal"]
 
 field_list = ["Black Magic", "Black Arts", "Charm", "Devilry", "Divination", "Enchantment",  "Hex", "Incantation", "Magic",
               "Malediction", "Necromancy", "Occultism", "Occult", "Spell", "Spellworking", "Sortilege",  "Sorcery",
               "Supernatural", "Sympathetic Magic", "Thaumaturgy", "Voodoo",  "White Magic", "Witching", "Witchery",
               "Witchcraft", "Wizardry"]
+
+globalStyleList = [StyleParameter(),
+                   StyleParameter("rgb(224 ,205 ,162)", 140, "tree", 2, 0.8),
+                   StyleParameter("rgb(120 ,120 ,120)", 20, "tree1", 1.5, 1)]
 
 
 def generate_name():
@@ -71,12 +76,6 @@ def generate_second_name():
     if random.random() > 0.5:
         return name_adj + " " + name_type+" of "+name_field
     return name_field + " " + name_type
-
-
-school_name = generate_name()
-random.seed(school_name)
-school_second = generate_second_name()
-
 
 # return a unique file name
 def uniquify(path, sep=''):
@@ -290,7 +289,7 @@ def compute_road_position(x1, y1, x2, y2, xm, ym, is_middle, road_list, target, 
     return distance_num, mar_return, road_return, draw_return
 
 
-def draw_cluster(draw_array, name, scale_min=0.05, scale_max=0.1, num_min=1, num_max=3, cluster_min=1, cluster_max=2, offset_height=40, offset_width=20):
+def draw_cluster(draw_array, name, globalStyle, scale_min=0.05, scale_max=0.1, num_min=1, num_max=3, cluster_min=1, cluster_max=2, offset_height=40, offset_width=20):
 
     trans_places = []
 
@@ -334,7 +333,7 @@ def draw_cluster(draw_array, name, scale_min=0.05, scale_max=0.1, num_min=1, num
     return content_text, trans_places
 
 
-def place_trees(draw_array):
+def place_trees(draw_array, globalStyle):
 
     for x_index in range(-10, 310, 5):
         for y_index in range(270, -10, -5):
@@ -349,12 +348,12 @@ def place_trees(draw_array):
                 if not is_under:
                     color = "rgb("+str(globalStyle.tree_color)+"," + str(globalStyle.tree_color + random.random() * 50) + ","+str(int(globalStyle.tree_color*0.7))+")"
                     size = random.uniform(0.02, 0.03) / globalStyle.size_factor
-                    draw_array.append(DrawObject(x, y, "tree", color, 0, size))
+                    draw_array.append(DrawObject(x, y, globalStyle.tree_path, color, 0, size))
 
 
-def draw(draw_array, svg_cache):
-    content_text=""
-    overlay_text=""
+def draw(draw_array, svg_cache, globalStyle):
+    content_text = ""
+    overlay_text = ""
     for d in draw_array:
         text = SvgObject(d.type, svg_cache).text
         data_text = '<g transform="translate(' + str(d.x) + ',' + str(
@@ -368,7 +367,16 @@ def draw(draw_array, svg_cache):
     return content_text, overlay_text
 
 
-def main():
+@app.route('/<nameid>')
+def generate(nameid=""):
+    school_name = generate_name()
+    if len(nameid)>0:
+        school_name = nameid
+    random.seed(school_name + str(random.random()))  # not repeatable but, great since name tend to come back
+    school_second = generate_second_name()
+
+    globalStyle = globalStyleList[1] # random.choice(globalStyleList)
+
     draw_array = []
     svg_cache = {}
     trans_places, d = draw_places(draw_array)
@@ -377,26 +385,23 @@ def main():
 
 
     # Adding background
-    draw_cluster(draw_array, "stones")
+    draw_cluster(draw_array, "stones", globalStyle)
 
     # Adding unique feature
     feature = [("stadium", 0.03, 0.05), ("castle", 0.03, 0.05), ("moais", 0.02, 0.03), ("dragon", 0.01, 0.02),
                ("columns", 0.02, 0.03), ("grave", 0.01, 0.02), ("treasure", 0.01, 0.02), ("tower", 0.02, 0.03),
                ("emblem", 0.01, 0.02)]
     for f in feature:
-        draw_cluster(draw_array, f[0], f[1], f[2], 1, 1, 1, 1)
+        draw_cluster(draw_array, f[0], globalStyle, f[1], f[2], 1, 1, 1, 1)
 
     # Minor background
-    draw_cluster(draw_array, "hut", 0.02, 0.03, 1, 3, 1, 10, 50, 50)
-    draw_cluster(draw_array, "cow", 0.01, 0.02, 1, 2, 1, 5, 20, 20)
+    draw_cluster(draw_array, "hut", globalStyle, 0.02, 0.03, 1, 3, 1, 10, 50, 50)
+    draw_cluster(draw_array, "cow", globalStyle, 0.01, 0.02, 1, 2, 1, 5, 20, 20)
 
-    place_trees(draw_array)
+    place_trees(draw_array, globalStyle)
     draw_array.sort(key=lambda p: p.y)
-    tree_text, overlay_text = draw(draw_array, svg_cache)
+    tree_text, overlay_text = draw(draw_array, svg_cache,globalStyle)
 
-    # Creating file
-    new_path = uniquify('file.svg')
-    new_file = open(new_path, 'w')
 
     header = load_svg("header", True) + '<rect width="100%" height="100%" fill="'+globalStyle.background_color+'"/>'
 
@@ -409,6 +414,15 @@ def main():
     title = '<text x="370" y="18" text-anchor="middle" font-family="Old English Text MT" font-size="12" font-weight="bold" fill="darkgrey" >'+school_name+'</text>'
     title += '<text x="370" y="30" text-anchor="middle" font-family="Tahoma" font-size="6" font-style="italic" fill="grey" >'+school_second+'</text>'
     title = header + tree_text + overlay_text + footer + title + '</svg>'
+
+    return title
+
+
+def main():
+    title = generate("")
+    # Creating file
+    new_path = uniquify('file.svg')
+    new_file = open(new_path, 'w')
     new_file.write(title)
 
     new_file.close()
