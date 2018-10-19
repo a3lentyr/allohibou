@@ -4,7 +4,7 @@ import os
 import random
 import math
 from math import sqrt
-from lib import fbd, links, name
+from lib import links, name
 
 from noise import pnoise2,snoise2
 import re
