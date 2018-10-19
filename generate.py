@@ -370,9 +370,11 @@ def draw(draw_array, svg_cache, globalStyle):
 @app.route('/<nameid>')
 def generate(nameid=""):
     school_name = generate_name()
+    key = str(random.random())   # not repeatable but, great since name tend to come back
     if len(nameid)>0:
         school_name = nameid
-    random.seed(school_name + str(random.random()))  # not repeatable but, great since name tend to come back
+        key = ""
+    random.seed(school_name + key)
     school_second = generate_second_name()
 
     globalStyle = globalStyleList[1] # random.choice(globalStyleList)
@@ -430,4 +432,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    # main()
+    app.run(host='0.0.0.0')
