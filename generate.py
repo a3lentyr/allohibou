@@ -374,6 +374,7 @@ def draw(draw_array, svg_cache, globalStyle):
 @app.route('/', defaults={'nameid': ""})
 @app.route('/<nameid>')
 def generate(nameid=""):
+    random.seed(random.random())
     school_name = generate_name()
     key = str(random.random())   # not repeatable but, great since name tend to come back
     if len(nameid)>0:
