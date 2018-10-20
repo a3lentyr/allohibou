@@ -23,6 +23,14 @@
     <button onclick="init()">New game</button>
     <button onclick="next()">Next Turn</button>
   </div>
+  
+  <div>
+  
+    <p >Chaque joueur peut jouer avec une carte différente. Laisser le champ vide pour un nom aléatoire, ou entrez le nom de votre école de magie !</p>
+       <input type="text" id="qta_field"/>
+       <a href='' rel="noopener noreferrer" target="_blank" onclick="this.href='https://allohibou.herokuapp.com/'+document.getElementById('qta_field').value">Imprimer une fiche individuelle</a>
+
+  </div>
 
   <script>
     /**
