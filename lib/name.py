@@ -1,4 +1,5 @@
 import random
+import sys
 
 # from http://www.geocities.com/anvrill/names/cc_goth.html
 PLACES = ['Adara', 'Adena', 'Adrianne', 'Alarice', 'Alvita', 'Amara', 'Ambika', 'Antonia', 'Araceli', 'Balandria',
@@ -52,7 +53,7 @@ class MName:
         Building the dictionary
         """
         if chainlen > 10 or chainlen < 1:
-            print "Chain length must be between 1 and 10, inclusive"
+            print("Chain length must be between 1 and 10, inclusive")
             sys.exit(0)
 
         self.mcd = Mdict()
