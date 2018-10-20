@@ -371,7 +371,8 @@ def draw(draw_array, svg_cache, globalStyle):
     return content_text, overlay_text
 
 
-@app.route('/<nameid>', defaults={'nameid': ""})
+@app.route('/', defaults={'nameid': ""})
+@app.route('/<nameid>')
 def generate(nameid=""):
     school_name = generate_name()
     key = str(random.random())   # not repeatable but, great since name tend to come back
