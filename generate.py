@@ -1,3 +1,7 @@
+import sys,os
+sys.path.append(os.getcwd())
+sys.path.append('lib')
+
 import tempfile
 import itertools as IT
 import os
