@@ -4,7 +4,7 @@ import sys
 # from http://www.geocities.com/anvrill/names/cc_goth.html
 PLACES = ['Adara', 'Adena', 'Adrianne', 'Alarice', 'Alvita', 'Amara', 'Ambika', 'Antonia', 'Araceli', 'Balandria',
           'Basha',
-          'Beryl', 'Bryn', 'Callia', 'Caryssa', 'Cassandra', 'Casondrah', 'Chatha', 'Ciara', 'Cynara', 'Cytheria',
+          'Beryl', 'Bryn', 'Callia', 'Caryssa', 'Cassandra', 'Casondra', 'Chatha', 'Ciara', 'Cynara', 'Cytheria',
           'Dabria', 'Darcei',
           'Deandra', 'Deirdre', 'Delores', 'Desdomna', 'Devi', 'Dominique', 'Drucilla', 'Duvessa', 'Ebony', 'Fantine',
           'Fuscienne',

@@ -377,7 +377,7 @@ def generate(nameid=""):
     random.seed(random.random())
     school_name = generate_name()
     key = str(random.random())   # not repeatable but, great since name tend to come back
-    if len(nameid)>0:
+    if len(nameid) > 0:
         school_name = nameid
         key = ""
     random.seed(school_name + key)
