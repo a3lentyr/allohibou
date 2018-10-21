@@ -15,6 +15,20 @@ PLACES = ['Adara', 'Adena', 'Adrianne', 'Alarice', 'Alvita', 'Amara', 'Ambika', 
           'Riona', 'Safiya', 'Salina', 'Severin', 'Sidonia', 'Sirena', 'Solita', 'Tempest', 'Thea', 'Treva', 'Trista',
           'Vala', 'Winta']
 
+PLACES += ['Sautou', 'Vinnnet', 'Argenvin', 'Carcaves', 'Upatore', 'Aubermiers', 'Beveil', 'Bergessy', 'Keperth',
+           'Lignan',
+           'Lefrany',
+           'Besanmont',
+           'Basrerth',
+           'Slougmora',
+           'Carcamans',
+           'Clagneux',
+           'Pulliers',
+           'Poiville',
+           'Lofinns',
+           'Mapmorths'
+           ]
+
 
 ###############################################################################
 # Markov Name model

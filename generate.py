@@ -66,11 +66,23 @@ globalStyleList = [StyleParameter(),
                    StyleParameter("rgb(224 ,205 ,162)", 140, "tree", 2, 0.8),
                    StyleParameter("rgb(120 ,120 ,120)", 20, "tree1", 1.5, 1)]
 
+width = 290
+height = 296
 
-def generate_name():
+
+def generate_name(last_list):
+    max_num = 100
+
     # name is schema {place) (adj) (type) or (place) (type) of (noun)
+
     name_place = name.MName().New()
-    return name_place
+    while name_place in last_list:
+        name_place = name.MName().New()
+
+    last_list.append(name_place)
+    if len(last_list) > max_num:
+        last_list = last_list[-max_num:]
+    return name_place, last_list
 
 
 def generate_second_name():
@@ -80,6 +92,7 @@ def generate_second_name():
     if random.random() > 0.5:
         return name_adj + " " + name_type+" of "+name_field
     return name_field + " " + name_type
+
 
 # return a unique file name
 def uniquify(path, sep=''):
@@ -132,9 +145,10 @@ def draw_places(draw_array):
     maxy = max([y[1] for y in places_coord])
 
     trans_places = []
+    margin = 30
     for pair_coord in places_coord:
-        x = int((pair_coord[0] - minx) * (280 - 25) / (maxx - minx) + 25)
-        y = int((pair_coord[1] - miny) * (250 - 25) / (maxy - miny) + 25)
+        x = int((pair_coord[0] - minx) * (width - 2*margin) / (maxx - minx) + margin)
+        y = int((pair_coord[1] - miny) * (height - 2*margin) / (maxy - miny) + margin)
         trans_places.append([x, y])
 
     # Adding places
@@ -305,8 +319,8 @@ def draw_cluster(draw_array, name, globalStyle, scale_min=0.05, scale_max=0.1, n
         x = 0
         y = 0
         while is_under:
-            y = random.random() * 250
-            x = random.random() * 300
+            y = random.random() * height
+            x = random.random() * width
             is_under = False
             for p in draw_array:
                 if sqrt((p.x - x ) ** 2 + (p.y - y ) ** 2) < p.margin+10: # own margin
@@ -339,8 +353,8 @@ def draw_cluster(draw_array, name, globalStyle, scale_min=0.05, scale_max=0.1, n
 
 def place_trees(draw_array, globalStyle):
 
-    for x_index in range(-10, 310, 5):
-        for y_index in range(270, -10, -5):
+    for x_index in range(-10, width+150, 5):
+        for y_index in range(height, -10, -5):
             x = x_index + 4 * random.random()
             y = y_index - 4 * random.random()
             if random.random() > 0.1:
@@ -371,13 +385,16 @@ def draw(draw_array, svg_cache, globalStyle):
     return content_text, overlay_text
 
 
+last_array = []  # global
+
 @app.route('/', defaults={'nameid': ""})
 @app.route('/<nameid>')
 def generate(nameid=""):
-    random.seed(random.random())
-    school_name = generate_name()
+    global last_array
+
+    school_name, last_array = generate_name(last_array)
     key = str(random.random())   # not repeatable but, great since name tend to come back
-    if len(nameid) > 0:
+    if len(nameid) > 1:
         school_name = nameid
         key = ""
     random.seed(school_name + key)
@@ -419,8 +436,8 @@ def generate(nameid=""):
     #header += '<path d = "M10 80 Q 52.5 10, 95 80 T 180 80" stroke="rgb(150,150,180)"  fill="transparent"/>'
 
     footer = load_svg("footer")
-    title = '<text x="370" y="18" text-anchor="middle" font-family="Old English Text MT" font-size="12" font-weight="bold" fill="darkgrey" >'+school_name+'</text>'
-    title += '<text x="370" y="30" text-anchor="middle" font-family="Tahoma" font-size="6" font-style="italic" fill="grey" >'+school_second+'</text>'
+    title = '<text x="350" y="23" text-anchor="middle" font-family="Old English Text MT" font-size="16" font-weight="bold" fill="white" >'+school_name+'</text>'
+    title += '<text x="350" y="40" text-anchor="middle" font-family="Tahoma" font-size="6" font-style="italic" fill="white" >'+school_second+'</text>'
     title = header + tree_text + overlay_text + footer + title + '</svg>'
 
     return title
