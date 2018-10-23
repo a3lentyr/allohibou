@@ -40,8 +40,8 @@
       <file leaf-file-name="generate.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/generate.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="262">
-              <caret line="438" column="77" lean-forward="false" selection-start-line="438" selection-start-column="77" selection-end-line="438" selection-end-column="77" />
+            <state relative-caret-position="370">
+              <caret line="65" column="72" lean-forward="false" selection-start-line="65" selection-start-column="72" selection-end-line="65" selection-end-column="72" />
               <folding />
             </state>
           </provider>
@@ -657,8 +657,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/generate.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="262">
-          <caret line="438" column="77" lean-forward="false" selection-start-line="438" selection-start-column="77" selection-end-line="438" selection-end-column="77" />
+        <state relative-caret-position="370">
+          <caret line="65" column="72" lean-forward="false" selection-start-line="65" selection-start-column="72" selection-end-line="65" selection-end-column="72" />
           <folding />
         </state>
       </provider>

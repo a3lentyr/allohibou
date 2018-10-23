@@ -63,7 +63,7 @@ field_list = ["Black Magic", "Black Arts", "Charm", "Devilry", "Divination", "En
               "Witchcraft", "Wizardry"]
 
 globalStyleList = [StyleParameter(),
-                   StyleParameter("rgb(224 ,205 ,162)", 140, "tree", 2, 0.8),
+                   StyleParameter("rgb(224 ,205 ,162)", 140, "tree", 1.8, 0.9),
                    StyleParameter("rgb(120 ,120 ,120)", 20, "tree1", 1.5, 1)]
 
 width = 290
