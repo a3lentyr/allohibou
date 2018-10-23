@@ -436,7 +436,8 @@ def generate(nameid=""):
     #header += '<path d = "M10 80 Q 52.5 10, 95 80 T 180 80" stroke="rgb(150,150,180)"  fill="transparent"/>'
 
     footer = load_svg("footer")
-    title = '<text x="350" y="23" text-anchor="middle" font-family="Old English Text MT" font-size="16" font-weight="bold" fill="white" >'+school_name+'</text>'
+    title = '<rect x="290" y="5" width="150" height="40" fill="rgba(0,0,0,0.2)"/>'
+    title += '<text x="350" y="23" text-anchor="middle" font-family="Old English Text MT" font-size="16" font-weight="bold" fill="white" >'+school_name+'</text>'
     title += '<text x="350" y="40" text-anchor="middle" font-family="Tahoma" font-size="6" font-style="italic" fill="white" >'+school_second+'</text>'
     title = header + tree_text + overlay_text + footer + title + '</svg>'
 
