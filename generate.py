@@ -66,7 +66,7 @@ globalStyleList = [StyleParameter(),
                    StyleParameter("rgb(224 ,205 ,162)", 140, "tree", 1.8, 0.9),
                    StyleParameter("rgb(120 ,120 ,120)", 20, "tree1", 1.5, 1)]
 
-width = 290
+width = 420
 height = 296
 
 
@@ -126,7 +126,7 @@ def load_svg(name,noreplace=False):
 
 def draw_places(draw_array):
     # forming list of places
-    form_list = ["triangle", "carre", "rond", "losange"]
+    form_list = ["rond", "rond"]
     color_list = ["violet", "orange", "green"]
 
     places_list = []
@@ -134,6 +134,10 @@ def draw_places(draw_array):
         for color in color_list:
             places_list.append(form + "-" + color)
 
+    for village_index in range(6):
+        places_list.append("rond-village-"+str(village_index))
+
+    random.shuffle(places_list)
 
     # placing places
     places_coord, d = links.get_places_coordinates(len(places_list))
@@ -162,16 +166,22 @@ def draw_places(draw_array):
 
 
 def draw_marchandise(march_places_list, draw_array):
-    # forming list of marchandise
-    form_list_m = ["triangle", "triangle", "triangle", "carre", "rond", "losange", "losange"]
-    color_list = ["violet", "orange", "green"]
+
     m_list = []
-    for form in form_list_m:
-        for color in color_list:
-            m_list.append(form + "-" + color + "-m")
-    random.shuffle(form_list_m)
+
+    for village_index in range(6):
+        m_list.append("resource-quest-"+str(village_index))
+
+    num_banner = 2+random.randint(0, 6)
+    for _ in range(num_banner):
+        m_list.append("resource-banner")
+
+    # Complete with barrel
+    for _ in range(20):
+        m_list.append("resource-barrel")
 
     m_index = 0
+    random.shuffle(march_places_list)
     for march in march_places_list:
         if m_index < len(m_list):
             xm = march[0]
@@ -204,6 +214,8 @@ def draw_roads(trans_places, d, draw_array):
                 x1, y1, x2, y2, xm, ym, is_middle = compute_roads_parameters(trans_places, i, j, target, d, place_list, [])
 
                 # For bezier tuning, we make a first allocation for dummy placing
+                if is_middle:
+                    continue
                 intersect_num, mar_return, road_return, draw_return = compute_road_position(x1, y1, x2, y2, xm, ym, is_middle, road_list, target, [], 0)
                 road_places_list_ref.append(road_return)
 
@@ -212,6 +224,8 @@ def draw_roads(trans_places, d, draw_array):
         for j, target in enumerate(place_list):
             if target > 0 and j > i:
                 x1, y1, x2, y2, xm, ym, is_middle = compute_roads_parameters(trans_places, i, j, target, d, place_list, shortened_list)
+                if is_middle:
+                    continue
 
                 testing_road = []
                 for road_test_index in range(10):
@@ -353,7 +367,7 @@ def draw_cluster(draw_array, name, globalStyle, scale_min=0.05, scale_max=0.1, n
 
 def place_trees(draw_array, globalStyle):
 
-    for x_index in range(-10, width+150, 5):
+    for x_index in range(-10, width, 5):
         for y_index in range(height, -10, -5):
             x = x_index + 4 * random.random()
             y = y_index - 4 * random.random()
@@ -408,22 +422,23 @@ def generate(nameid=""):
     road_places_list, march_places_list = draw_roads(trans_places, d, draw_array)
     draw_marchandise(march_places_list,draw_array)
 
+    if True:
+        # Adding background
+        draw_cluster(draw_array, "stones", globalStyle)
 
-    # Adding background
-    draw_cluster(draw_array, "stones", globalStyle)
+        # Adding unique feature
+        feature = [("stadium", 0.03, 0.05), ("castle", 0.03, 0.05), ("moais", 0.02, 0.03), ("dragon", 0.01, 0.02),
+                ("columns", 0.02, 0.03), ("grave", 0.01, 0.02), ("treasure", 0.01, 0.02), ("tower", 0.02, 0.03),
+                ("emblem", 0.01, 0.02)]
+        for f in feature:
+            draw_cluster(draw_array, f[0], globalStyle, f[1], f[2], 1, 1, 1, 1)
 
-    # Adding unique feature
-    feature = [("stadium", 0.03, 0.05), ("castle", 0.03, 0.05), ("moais", 0.02, 0.03), ("dragon", 0.01, 0.02),
-               ("columns", 0.02, 0.03), ("grave", 0.01, 0.02), ("treasure", 0.01, 0.02), ("tower", 0.02, 0.03),
-               ("emblem", 0.01, 0.02)]
-    for f in feature:
-        draw_cluster(draw_array, f[0], globalStyle, f[1], f[2], 1, 1, 1, 1)
+        # Minor background
+        draw_cluster(draw_array, "hut", globalStyle, 0.02, 0.03, 1, 3, 1, 10, 50, 50)
+        draw_cluster(draw_array, "cow", globalStyle, 0.01, 0.02, 1, 2, 1, 5, 20, 20)
 
-    # Minor background
-    draw_cluster(draw_array, "hut", globalStyle, 0.02, 0.03, 1, 3, 1, 10, 50, 50)
-    draw_cluster(draw_array, "cow", globalStyle, 0.01, 0.02, 1, 2, 1, 5, 20, 20)
+        place_trees(draw_array, globalStyle)
 
-    place_trees(draw_array, globalStyle)
     draw_array.sort(key=lambda p: p.y)
     tree_text, overlay_text = draw(draw_array, svg_cache,globalStyle)
 
@@ -439,7 +454,7 @@ def generate(nameid=""):
     title = '<rect x="290" y="5" width="150" height="40" fill="rgba(0,0,0,0.2)"/>'
     title += '<text x="350" y="23" text-anchor="middle" font-family="Old English Text MT" font-size="16" font-weight="bold" fill="white" >'+school_name+'</text>'
     title += '<text x="350" y="40" text-anchor="middle" font-family="Tahoma" font-size="6" font-style="italic" fill="white" >'+school_second+'</text>'
-    title = header + tree_text + overlay_text + footer + title + '</svg>'
+    title = header + tree_text + overlay_text  + '</svg>'
 
     return title
 
@@ -456,6 +471,6 @@ def main():
 
 
 if __name__ == "__main__":
-    # main()
+    main()
     port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port)
+    #app.run(host='0.0.0.0', port=port)

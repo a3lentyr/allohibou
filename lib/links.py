@@ -87,7 +87,7 @@ def create_random_links(x, m):
         d, segment = create_multiple_link(nrows, x, i, d, segment, 2)
     cycle_list = list(reversed(cycle_list))
 
-    # Then we complete the links            
+    # Then we complete the links
     for i in cycle_list:
         d, segment = create_multiple_link(nrows, x, i, d, segment, 4)
 
