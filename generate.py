@@ -401,7 +401,22 @@ def place_trees(draw_array, globalStyle):
                 if not is_under:
                     color = "rgb("+str(globalStyle.tree_color)+"," + str(globalStyle.tree_color + random.random() * 50) + ","+str(int(globalStyle.tree_color*0.7))+")"
                     size = random.uniform(0.02, 0.03) / globalStyle.size_factor
-                    draw_temp.append(DrawObject(x, y, globalStyle.tree_path, color, 0, size,z_=-200))
+                    draw_temp.append(DrawObject(x, y, globalStyle.tree_path, color, 0, size,z_=-800))
+
+    for x_index in range(-10, width, 20):
+        for y_index in range(height, -10, -20):
+            x = x_index + 4 * random.random()
+            y = y_index - 4 * random.random()
+            if random.random() > 0.1:
+                is_under = False
+                for p in draw_array:
+                    if sqrt((p.x - x) ** 2 + (p.y - y) ** 2) < p.margin+15:
+                        is_under = True
+                        break
+                if not is_under:
+                    color = "rgb("+str(globalStyle.tree_color)+"," + str(globalStyle.tree_color + random.random() * 50) + ","+str(int(globalStyle.tree_color*0.7))+")"
+                    size = random.uniform(0.02, 0.06) / globalStyle.size_factor
+                    draw_temp.append(DrawObject(x, y, "seas_detail", color, 0, size,z_=-700))
 
     draw_array += draw_temp
 
@@ -446,11 +461,9 @@ def generate(nameid=""):
         draw_cluster(draw_array, "stones", globalStyle)
 
         # Adding unique feature
-        '''feature = [("stadium", 0.03, 0.05), ("castle", 0.03, 0.05), ("moais", 0.02, 0.03), ("dragon", 0.01, 0.02),
-                ("columns", 0.02, 0.03), ("grave", 0.01, 0.02), ("treasure", 0.01, 0.02), ("tower", 0.02, 0.03),
-                ("emblem", 0.01, 0.02)]
+        feature = [("island", 0.03, 0.1,2,10)]#, ("seas_detail", 0.03, 0.05,100,200)]
         for f in feature:
-            draw_cluster(draw_array, f[0], globalStyle, f[1], f[2], 1, 1, 1, 1)'''
+            draw_cluster(draw_array, f[0], globalStyle, f[1], f[2], f[3], f[4], 1, 3)
 
         # Minor background
         #draw_cluster(draw_array, "hut", globalStyle, 0.02, 0.03, 1, 3, 1, 10, 50, 50)
