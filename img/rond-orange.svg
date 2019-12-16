@@ -30,8 +30,8 @@
      id="namedview31"
      showgrid="false"
      inkscape:zoom="14.749972"
-     inkscape:cx="-8.7930004"
-     inkscape:cy="521.67945"
+     inkscape:cx="20.828119"
+     inkscape:cy="505.40823"
      inkscape:window-x="-9"
      inkscape:window-y="-9"
      inkscape:window-maximized="1"
@@ -142,7 +142,7 @@
      id="path4664"
      inkscape:connector-curvature="0" /><g
      id="g4881"
-     transform="matrix(0.08921458,0,0,0.08921458,-1.292584,-16.900801)"
+     transform="matrix(0.08921458,0,0,0.08921458,1.3514888,-16.900801)"
      style="fill:#ffffff"><g
        id="g4809"
        style="fill:#ffffff"><path
@@ -243,4 +243,21 @@
        id="g4837"
        style="fill:#ffffff" /><g
        id="g4839"
-       style="fill:#ffffff" /></g></svg>
+       style="fill:#ffffff" /></g><rect
+     style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:1.00157475;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+     id="rect4531"
+     width="9.4920282"
+     height="9.4920282"
+     x="-2.3422451"
+     y="11.660801" /><text
+     xml:space="preserve"
+     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5.33333349px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none"
+     x="-1.8305118"
+     y="-10.615091"
+     id="text4521"><tspan
+       sodipodi:role="line"
+       id="tspan4519"
+       x="-1.8305118"
+       y="-10.615091"
+       style="font-size:10.66666698px;line-height:1.25;fill:#ffffff">+</tspan></text>
+</svg>

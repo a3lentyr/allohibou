@@ -30,7 +30,7 @@
      id="namedview31"
      showgrid="false"
      inkscape:zoom="14.749972"
-     inkscape:cx="1.2423151"
+     inkscape:cx="-28.656047"
      inkscape:cy="516.32741"
      inkscape:window-x="-9"
      inkscape:window-y="-9"
@@ -142,7 +142,7 @@
      id="path4664"
      inkscape:connector-curvature="0" /><g
      id="g4941"
-     transform="matrix(0.01239012,0,0,0.01239012,-1.667845,-17.276056)"
+     transform="matrix(0.01239012,0,0,0.01239012,0.90843108,-17.276056)"
      style="fill:#ffffff"><g
        id="g4885"
        style="fill:#ffffff"><path
@@ -179,4 +179,21 @@
        id="g4913"
        style="fill:#ffffff" /><g
        id="g4915"
-       style="fill:#ffffff" /></g></svg>
+       style="fill:#ffffff" /></g><rect
+     style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:1.00157475;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+     id="rect4531"
+     width="9.4920282"
+     height="9.4920282"
+     x="-2.3422451"
+     y="11.186225" /><text
+     xml:space="preserve"
+     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5.33333349px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none"
+     x="-2.0339024"
+     y="-10.547295"
+     id="text4521"><tspan
+       sodipodi:role="line"
+       id="tspan4519"
+       x="-2.0339024"
+       y="-10.547295"
+       style="font-size:10.66666698px;line-height:1.25;fill:#ffffff">+</tspan></text>
+</svg>

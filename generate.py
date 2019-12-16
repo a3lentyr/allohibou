@@ -29,16 +29,17 @@ class StyleParameter:
 
 
 class DrawObject:
-    def __init__(self, x_, y_, type_, color_, margin_, size_, rotate_factor_= 0, overlay_=False, opacity_=1):
+    def __init__(self, x_, y_, type_, color_, margin_, size_, rotate_factor_= 0, z_= - 10000, opacity_=1):
         self.x = x_
         self.y = y_
+        self.z = z_
         self.type = type_
         self.margin = margin_
         self.color = color_
         self.size = size_
         self.rotate_factor = rotate_factor_
-        self.overlay = overlay_
         self.opacity = opacity_
+
 
 
 class SvgObject:
@@ -63,6 +64,7 @@ field_list = ["Black Magic", "Black Arts", "Charm", "Devilry", "Divination", "En
               "Witchcraft", "Wizardry"]
 
 globalStyleList = [StyleParameter(),
+                   StyleParameter("rgb(224 ,205 ,162)", 140, "sea1", 1.8, 0.9),
                    StyleParameter("rgb(224 ,205 ,162)", 140, "tree", 1.8, 0.9),
                    StyleParameter("rgb(120 ,120 ,120)", 20, "tree1", 1.5, 1)]
 
@@ -126,7 +128,7 @@ def load_svg(name,noreplace=False):
 
 def draw_places(draw_array):
     # forming list of places
-    form_list = ["rond", "rond"]
+    form_list = ["rond"]
     color_list = ["violet", "orange", "green"]
 
     places_list = []
@@ -134,8 +136,12 @@ def draw_places(draw_array):
         for color in color_list:
             places_list.append(form + "-" + color)
 
-    for village_index in range(6):
-        places_list.append("rond-village-"+str(village_index))
+    for _ in range(2):
+        for village_index in range(3):
+            places_list.append("rond-village-"+str(village_index+1))
+
+    for _ in range(3):
+        places_list.append("rond-port")
 
     random.shuffle(places_list)
 
@@ -149,7 +155,7 @@ def draw_places(draw_array):
     maxy = max([y[1] for y in places_coord])
 
     trans_places = []
-    margin = 30
+    margin = 40
     for pair_coord in places_coord:
         x = int((pair_coord[0] - minx) * (width - 2*margin) / (maxx - minx) + margin)
         y = int((pair_coord[1] - miny) * (height - 2*margin) / (maxy - miny) + margin)
@@ -160,7 +166,7 @@ def draw_places(draw_array):
     for i, name in enumerate(places_list):
         x = trans_places[i][0]
         y = trans_places[i][1]
-        draw_array.append(DrawObject(x, y, name, "", 25, 1, 0, True))
+        draw_array.append(DrawObject(x, y, name, "", 25, 1, 0, y+1000))
 
     return trans_places, d
 
@@ -169,16 +175,16 @@ def draw_marchandise(march_places_list, draw_array):
 
     m_list = []
 
-    for village_index in range(6):
-        m_list.append("resource-quest-"+str(village_index))
+    for village_index in range(3):
+        m_list.append("resource-barrel-"+str(village_index))
 
-    num_banner = 2+random.randint(0, 6)
-    for _ in range(num_banner):
-        m_list.append("resource-banner")
+    for _ in range(3):
+        m_list.append("resource-monster")
 
     # Complete with barrel
-    for _ in range(20):
-        m_list.append("resource-barrel")
+    for _ in range(7):
+        for village_index in range(3):
+            m_list.append("resource-ship-"+str(village_index))
 
     m_index = 0
     random.shuffle(march_places_list)
@@ -186,9 +192,9 @@ def draw_marchandise(march_places_list, draw_array):
         if m_index < len(m_list):
             xm = march[0]
             ym = march[1]
-            draw_array.append(DrawObject(xm, ym, m_list[m_index], "", 15, 1, 0, True))
+            draw_array.append(DrawObject(xm, ym, m_list[m_index], "", 0, 0.8, 0, ym+1000))
             if march[2]:
-                draw_array.append(DrawObject(xm, ym+1, "close", "black", 0, 0.4, 90*random.random(),False,0.5))
+                draw_array.append(DrawObject(xm, ym+1, "close", "black", 0, 0.4, 90*random.random(),ym+1,0.5))
             m_index += 1
 
 
@@ -311,7 +317,7 @@ def compute_road_position(x1, y1, x2, y2, xm, ym, is_middle, road_list, target, 
             rotate_factor = links.ang([[xrmp, yrmp], [xrmn, yrmn]], [[0, 0], [-1, 0]])
 
         road_return.append([xrm, yrm])
-        draw_return.append(DrawObject(xrm, yrm, road_list[int((target - 0.3) * 100)], "", 10, 1, rotate_factor))
+        draw_return.append(DrawObject(xrm, yrm, road_list[int((target - 0.3) * 100)], "", 10, 1, rotate_factor,yrm))
 
         # compute distance to other roads
         for other_road in road_places_list:
@@ -360,12 +366,27 @@ def draw_cluster(draw_array, name, globalStyle, scale_min=0.05, scale_max=0.1, n
         xs = p[0] + 2 * random.random()
         ys = p[1] + 2 * random.random()
         scale = random.uniform(scale_min, scale_max)
-        draw_array.append(DrawObject(xs, ys, name, "", 5, scale/globalStyle.size_factor, 0, False, globalStyle.opacity_factor))
+        draw_array.append(DrawObject(xs, ys, name, "", 5, scale/globalStyle.size_factor, 0, ys, globalStyle.opacity_factor))
 
     return content_text, trans_places
 
 
 def place_trees(draw_array, globalStyle):
+    draw_temp = []
+    for x_index in range(-10, width, 5):
+        for y_index in range(height, -10, -5):
+            x = x_index + 4 * random.random()
+            y = y_index - 4 * random.random()
+            if random.random() > 0.1:
+                is_under = False
+                for p in draw_array:
+                    if sqrt((p.x - x) ** 2 + (p.y - y) ** 2) < p.margin+5:
+                        is_under = True
+                        break
+                if not is_under:
+                    color = "rgb("+str(globalStyle.tree_color)+"," + str(globalStyle.tree_color + random.random() * 50) + ","+str(int(globalStyle.tree_color*0.7))+")"
+                    size = random.uniform(0.02, 0.03) / globalStyle.size_factor
+                    draw_temp.append(DrawObject(x, y, "sea2", color, 0, size,z_= -9000))
 
     for x_index in range(-10, width, 5):
         for y_index in range(height, -10, -5):
@@ -374,29 +395,27 @@ def place_trees(draw_array, globalStyle):
             if random.random() > 0.1:
                 is_under = False
                 for p in draw_array:
-                    if sqrt((p.x - x) ** 2 + (p.y - y) ** 2) < p.margin:
+                    if sqrt((p.x - x) ** 2 + (p.y - y) ** 2) < p.margin+10:
                         is_under = True
                         break
                 if not is_under:
                     color = "rgb("+str(globalStyle.tree_color)+"," + str(globalStyle.tree_color + random.random() * 50) + ","+str(int(globalStyle.tree_color*0.7))+")"
                     size = random.uniform(0.02, 0.03) / globalStyle.size_factor
-                    draw_array.append(DrawObject(x, y, globalStyle.tree_path, color, 0, size))
+                    draw_temp.append(DrawObject(x, y, globalStyle.tree_path, color, 0, size,z_=-200))
+
+    draw_array += draw_temp
 
 
 def draw(draw_array, svg_cache, globalStyle):
     content_text = ""
-    overlay_text = ""
     for d in draw_array:
         text = SvgObject(d.type, svg_cache).text
         data_text = '<g transform="translate(' + str(d.x) + ',' + str(
             d.y) + ')  scale(' + str(d.size) + ',' + str(d.size)+') rotate(' + str(
                         d.rotate_factor) + ')" fill="' + d.color + '" style="opacity:' + str(d.opacity)+';">' + text + '</g>'
-        if d.overlay:
-            overlay_text += data_text
-        else:
-            content_text += data_text
+        content_text += data_text
 
-    return content_text, overlay_text
+    return content_text
 
 
 last_array = []  # global
@@ -427,20 +446,20 @@ def generate(nameid=""):
         draw_cluster(draw_array, "stones", globalStyle)
 
         # Adding unique feature
-        feature = [("stadium", 0.03, 0.05), ("castle", 0.03, 0.05), ("moais", 0.02, 0.03), ("dragon", 0.01, 0.02),
+        '''feature = [("stadium", 0.03, 0.05), ("castle", 0.03, 0.05), ("moais", 0.02, 0.03), ("dragon", 0.01, 0.02),
                 ("columns", 0.02, 0.03), ("grave", 0.01, 0.02), ("treasure", 0.01, 0.02), ("tower", 0.02, 0.03),
                 ("emblem", 0.01, 0.02)]
         for f in feature:
-            draw_cluster(draw_array, f[0], globalStyle, f[1], f[2], 1, 1, 1, 1)
+            draw_cluster(draw_array, f[0], globalStyle, f[1], f[2], 1, 1, 1, 1)'''
 
         # Minor background
-        draw_cluster(draw_array, "hut", globalStyle, 0.02, 0.03, 1, 3, 1, 10, 50, 50)
-        draw_cluster(draw_array, "cow", globalStyle, 0.01, 0.02, 1, 2, 1, 5, 20, 20)
+        #draw_cluster(draw_array, "hut", globalStyle, 0.02, 0.03, 1, 3, 1, 10, 50, 50)
+        #draw_cluster(draw_array, "cow", globalStyle, 0.01, 0.02, 1, 2, 1, 5, 20, 20)
 
         place_trees(draw_array, globalStyle)
 
-    draw_array.sort(key=lambda p: p.y)
-    tree_text, overlay_text = draw(draw_array, svg_cache,globalStyle)
+    draw_array.sort(key=lambda p: p.z)
+    content_text = draw(draw_array, svg_cache, globalStyle)
 
 
     header = load_svg("header", True) + '<rect width="100%" height="100%" fill="'+globalStyle.background_color+'"/>'
@@ -454,7 +473,7 @@ def generate(nameid=""):
     title = '<rect x="290" y="5" width="150" height="40" fill="rgba(0,0,0,0.2)"/>'
     title += '<text x="350" y="23" text-anchor="middle" font-family="Old English Text MT" font-size="16" font-weight="bold" fill="white" >'+school_name+'</text>'
     title += '<text x="350" y="40" text-anchor="middle" font-family="Tahoma" font-size="6" font-style="italic" fill="white" >'+school_second+'</text>'
-    title = header + tree_text + overlay_text  + '</svg>'
+    title = header + content_text + '</svg>'
 
     return title
 
