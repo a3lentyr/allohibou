@@ -15,7 +15,7 @@ def get_ordered_list(points, x_list, i):
 
 
 def create_multiple_link(nrows, x, i, d, segment, num_max=3):
-    next_list = range(nrows)
+    next_list = list(range(nrows))
     random.shuffle(next_list)
     next_list = get_ordered_list(next_list, x, i)
 
@@ -71,16 +71,16 @@ def create_random_links(x, m):
     d = []
     nrows = m
     ncols = m
-    for i in xrange(nrows):
+    for i in range(nrows):
         dr = []
-        for j in xrange(ncols):
+        for j in range(ncols):
             dr.append(.0)
         d.append(dr)
 
     segment = []
 
     # first we create a cycle
-    cycle_list = range(nrows)
+    cycle_list = list(range(nrows))
     random.shuffle(cycle_list)
 
     for i in cycle_list:
@@ -161,7 +161,7 @@ def get_places_coordinates(m):
         x = []
         v = []
 
-        for i in xrange(m):
+        for i in range(m):
             xi = grid[i]
             x.append(xi)
             v.append([0.0, 0.0])

@@ -39,12 +39,12 @@ def forcedrawing(x, v, d):
     m = len(x)
     ekint = [0.0, 0.0]
 
-    segment = [[x[i], x[j]] for i in xrange(m) for j in xrange(m) if (d[i][j] != 0)]
+    segment = [[x[i], x[j]] for i in range(m) for j in range(m) if (d[i][j] != 0)]
 
-    for i in xrange(m):
+    for i in range(m):
         Fx = 0.0 + random.random() * 0.1
         Fy = 0.0 + random.random() * 0.1
-        for j in xrange(m):
+        for j in range(m):
             if j == 1:
                 continue
             dij = d[i][j]
@@ -71,7 +71,7 @@ def forcedrawing(x, v, d):
         ekint[0] = ekint[0] + alpha * (v[i][0] * v[i][0])
         ekint[1] = ekint[1] + alpha * (v[i][1] * v[i][1])
 
-    for i in xrange(m):
+    for i in range(m):
         x[i][0] += v[i][0] * delta_t
         x[i][1] += v[i][1] * delta_t
     return x, v

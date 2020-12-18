@@ -64,7 +64,7 @@ field_list = ["Black Magic", "Black Arts", "Charm", "Devilry", "Divination", "En
               "Witchcraft", "Wizardry"]
 
 globalStyleList = [StyleParameter(),
-                   StyleParameter("rgb(224 ,205 ,162)", 140, "sea1", 1.8, 0.9),
+                   StyleParameter("rgb(219 ,158 ,0)", 140, "sea1", 1.8, 1),
                    StyleParameter("rgb(224 ,205 ,162)", 140, "tree", 1.8, 0.9),
                    StyleParameter("rgb(120 ,120 ,120)", 20, "tree1", 1.5, 1)]
 
@@ -183,8 +183,8 @@ def draw_marchandise(march_places_list, draw_array):
 
     # Complete with barrel
     for _ in range(7):
-        for village_index in range(3):
-            m_list.append("resource-ship-"+str(village_index))
+        for _ in range(3):
+            m_list.append("resource-ship-")
 
     m_index = 0
     random.shuffle(march_places_list)
@@ -192,7 +192,12 @@ def draw_marchandise(march_places_list, draw_array):
         if m_index < len(m_list):
             xm = march[0]
             ym = march[1]
-            draw_array.append(DrawObject(xm, ym, m_list[m_index], "", 0, 0.8, 0, ym+1000))
+            color = march[3]
+            name =  m_list[m_index]
+            if name[-1]=="-":
+                name+=color
+            draw_array.append(DrawObject(xm, ym, name, "", 0, 0.8, 0, ym+1000))
+
             if march[2]:
                 draw_array.append(DrawObject(xm, ym+1, "close", "black", 0, 0.4, 90*random.random(),ym+1,0.5))
             m_index += 1
@@ -277,7 +282,7 @@ def compute_roads_parameters(trans_places, i, j, target, d, place_list, shortene
 
 
 def compute_road_position(x1, y1, x2, y2, xm, ym, is_middle, road_list, target, road_places_list, tc):
-
+    color = road_list[int((target - 0.3) * 100)]
     ax = 10000
     if y2 != y1:
         ax = (x2 - x1) / (y2 - y1)
@@ -290,7 +295,7 @@ def compute_road_position(x1, y1, x2, y2, xm, ym, is_middle, road_list, target, 
 
     if not is_middle:
         xm, ym = bezier(x1, y1, xc, yc, x2, y2, 0.5)
-    mar_return = [xm, ym, is_middle]
+    mar_return = [xm, ym, is_middle, color]
 
     # road graphism
 
@@ -317,7 +322,7 @@ def compute_road_position(x1, y1, x2, y2, xm, ym, is_middle, road_list, target, 
             rotate_factor = links.ang([[xrmp, yrmp], [xrmn, yrmn]], [[0, 0], [-1, 0]])
 
         road_return.append([xrm, yrm])
-        draw_return.append(DrawObject(xrm, yrm, road_list[int((target - 0.3) * 100)], "", 10, 1, rotate_factor,yrm))
+        draw_return.append(DrawObject(xrm, yrm, color, "", t*10, 1, rotate_factor,yrm))
 
         # compute distance to other roads
         for other_road in road_places_list:
@@ -380,13 +385,13 @@ def place_trees(draw_array, globalStyle):
             if random.random() > 0.1:
                 is_under = False
                 for p in draw_array:
-                    if sqrt((p.x - x) ** 2 + (p.y - y) ** 2) < p.margin+5:
+                    if sqrt((p.x - x) ** 2 + (p.y - y) ** 2)< p.margin + 5 + 5*random.random() :
                         is_under = True
                         break
                 if not is_under:
                     color = "rgb("+str(globalStyle.tree_color)+"," + str(globalStyle.tree_color + random.random() * 50) + ","+str(int(globalStyle.tree_color*0.7))+")"
                     size = random.uniform(0.02, 0.03) / globalStyle.size_factor
-                    draw_temp.append(DrawObject(x, y, "sea2", color, 0, size,z_= -9000))
+                    draw_temp.append(DrawObject(x, y, "sea2", color, 0, size,random.random()*360.0,z_= -9000))
 
     for x_index in range(-10, width, 5):
         for y_index in range(height, -10, -5):
@@ -395,13 +400,13 @@ def place_trees(draw_array, globalStyle):
             if random.random() > 0.1:
                 is_under = False
                 for p in draw_array:
-                    if sqrt((p.x - x) ** 2 + (p.y - y) ** 2) < p.margin+10:
+                    if sqrt((p.x - x) ** 2 + (p.y - y) ** 2) < p.margin+12:
                         is_under = True
                         break
                 if not is_under:
                     color = "rgb("+str(globalStyle.tree_color)+"," + str(globalStyle.tree_color + random.random() * 50) + ","+str(int(globalStyle.tree_color*0.7))+")"
                     size = random.uniform(0.02, 0.03) / globalStyle.size_factor
-                    draw_temp.append(DrawObject(x, y, globalStyle.tree_path, color, 0, size,z_=-800))
+                    draw_temp.append(DrawObject(x, y, globalStyle.tree_path, color, 0, size, random.random()*360.0,z_=-800))
 
     for x_index in range(-10, width, 20):
         for y_index in range(height, -10, -20):
@@ -503,6 +508,6 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    #main()
     port = int(os.environ.get('PORT', 5000))
-    #app.run(host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=port)
