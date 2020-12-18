@@ -1,7 +1,7 @@
 import sys, os
 sys.path.append(os.getcwd())
 sys.path.append('lib')
-
+import cairosvg
 import tempfile
 import itertools as IT
 import os
@@ -9,9 +9,11 @@ import random
 import math
 from math import sqrt
 from lib import links, name
-
+from io import BytesIO
 from noise import pnoise2,snoise2
 import re
+from flask import send_file
+import logging
 # random.seed(44)
 
 from flask import Flask
@@ -378,8 +380,8 @@ def draw_cluster(draw_array, name, globalStyle, scale_min=0.05, scale_max=0.1, n
 
 def place_trees(draw_array, globalStyle):
     draw_temp = []
-    for x_index in range(-10, width, 5):
-        for y_index in range(height, -10, -5):
+    for x_index in range(-10, width, 20):
+        for y_index in range(height, -10, -20):
             x = x_index + 4 * random.random()
             y = y_index - 4 * random.random()
             if random.random() > 0.1:
@@ -390,38 +392,8 @@ def place_trees(draw_array, globalStyle):
                         break
                 if not is_under:
                     color = "rgb("+str(globalStyle.tree_color)+"," + str(globalStyle.tree_color + random.random() * 50) + ","+str(int(globalStyle.tree_color*0.7))+")"
-                    size = random.uniform(0.02, 0.03) / globalStyle.size_factor
-                    draw_temp.append(DrawObject(x, y, "sea2", color, 0, size,random.random()*360.0,z_= -9000))
-
-    for x_index in range(-10, width, 5):
-        for y_index in range(height, -10, -5):
-            x = x_index + 4 * random.random()
-            y = y_index - 4 * random.random()
-            if random.random() > 0.1:
-                is_under = False
-                for p in draw_array:
-                    if sqrt((p.x - x) ** 2 + (p.y - y) ** 2) < p.margin+12:
-                        is_under = True
-                        break
-                if not is_under:
-                    color = "rgb("+str(globalStyle.tree_color)+"," + str(globalStyle.tree_color + random.random() * 50) + ","+str(int(globalStyle.tree_color*0.7))+")"
-                    size = random.uniform(0.02, 0.03) / globalStyle.size_factor
-                    draw_temp.append(DrawObject(x, y, globalStyle.tree_path, color, 0, size, random.random()*360.0,z_=-800))
-
-    for x_index in range(-10, width, 20):
-        for y_index in range(height, -10, -20):
-            x = x_index + 4 * random.random()
-            y = y_index - 4 * random.random()
-            if random.random() > 0.1:
-                is_under = False
-                for p in draw_array:
-                    if sqrt((p.x - x) ** 2 + (p.y - y) ** 2) < p.margin+15:
-                        is_under = True
-                        break
-                if not is_under:
-                    color = "rgb("+str(globalStyle.tree_color)+"," + str(globalStyle.tree_color + random.random() * 50) + ","+str(int(globalStyle.tree_color*0.7))+")"
                     size = random.uniform(0.02, 0.06) / globalStyle.size_factor
-                    draw_temp.append(DrawObject(x, y, "seas_detail", color, 0, size,z_=-700))
+                    draw_temp.append(DrawObject(x, y, "sea2", color, 0, size,random.random()*360.0,z_= -9000))
 
     draw_array += draw_temp
 
@@ -493,7 +465,15 @@ def generate(nameid=""):
     title += '<text x="350" y="40" text-anchor="middle" font-family="Tahoma" font-size="6" font-style="italic" fill="white" >'+school_second+'</text>'
     title = header + content_text + '</svg>'
 
-    return title
+
+    png = cairosvg.svg2png(bytestring=title,scale=5, unsafe=True)
+    app.logger.warning("png done")
+
+    buffer = BytesIO()
+    buffer.write(png)
+    buffer.seek(0)
+    return send_file(buffer, mimetype='image/png')
+
 
 
 def main():
