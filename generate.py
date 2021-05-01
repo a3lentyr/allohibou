@@ -173,18 +173,33 @@ def draw_places(draw_array):
     return trans_places, d
 
 
+def draw_resources(trans_places,draw_array):
+    # forming list of places
+    form_list = ["res_weapon","res_food","treasure"]
+
+    resources_list = []
+    for _ in range(12):
+        for form in form_list:
+            resources_list.append(form)
+
+    random.shuffle(resources_list)
+    resources_index = 0
+    for i, _ in enumerate(trans_places):
+        for j in range(3):
+            x = trans_places[i][0]+(j-1)*18+2
+            y = trans_places[i][1]+15
+            name = resources_list[resources_index]
+            draw_array.append(DrawObject(x, y, name, "", 25, 1.5, 0, y+2001))
+            resources_index+=1
+
+
+
 def draw_marchandise(march_places_list, draw_array):
 
     m_list = []
 
-    for village_index in range(3):
-        m_list.append("resource-barrel-"+str(village_index))
-
-    for _ in range(3):
-        m_list.append("resource-monster")
-
     # Complete with barrel
-    for _ in range(7):
+    for _ in range(9):
         for _ in range(3):
             m_list.append("resource-ship-")
 
@@ -380,8 +395,8 @@ def draw_cluster(draw_array, name, globalStyle, scale_min=0.05, scale_max=0.1, n
 
 def place_trees(draw_array, globalStyle):
     draw_temp = []
-    for x_index in range(-10, width, 20):
-        for y_index in range(height, -10, -20):
+    for x_index in range(-10, width, 10):
+        for y_index in range(height, -10, -10):
             x = x_index + 4 * random.random()
             y = y_index - 4 * random.random()
             if random.random() > 0.1:
@@ -392,7 +407,7 @@ def place_trees(draw_array, globalStyle):
                         break
                 if not is_under:
                     color = "rgb("+str(globalStyle.tree_color)+"," + str(globalStyle.tree_color + random.random() * 50) + ","+str(int(globalStyle.tree_color*0.7))+")"
-                    size = random.uniform(0.02, 0.06) / globalStyle.size_factor
+                    size = random.uniform(0.02, 0.04) / globalStyle.size_factor
                     draw_temp.append(DrawObject(x, y, "sea2", color, 0, size,random.random()*360.0,z_= -9000))
 
     draw_array += draw_temp
@@ -432,40 +447,31 @@ def generate(nameid=""):
     trans_places, d = draw_places(draw_array)
     road_places_list, march_places_list = draw_roads(trans_places, d, draw_array)
     draw_marchandise(march_places_list,draw_array)
+    draw_resources(trans_places,draw_array)
 
     if True:
         # Adding background
         draw_cluster(draw_array, "stones", globalStyle)
 
         # Adding unique feature
-        feature = [("island", 0.03, 0.1,2,10)]#, ("seas_detail", 0.03, 0.05,100,200)]
+        feature = [("island", 0.03, 0.1,2,10)]
         for f in feature:
             draw_cluster(draw_array, f[0], globalStyle, f[1], f[2], f[3], f[4], 1, 3)
 
-        # Minor background
-        #draw_cluster(draw_array, "hut", globalStyle, 0.02, 0.03, 1, 3, 1, 10, 50, 50)
-        #draw_cluster(draw_array, "cow", globalStyle, 0.01, 0.02, 1, 2, 1, 5, 20, 20)
 
         place_trees(draw_array, globalStyle)
 
+    # Sorting image by Z-depth, calling draw function for each object to add text to content
     draw_array.sort(key=lambda p: p.z)
     content_text = draw(draw_array, svg_cache, globalStyle)
 
 
+    # Adding header and footer
     header = load_svg("header", True) + '<rect width="100%" height="100%" fill="'+globalStyle.background_color+'"/>'
-
-    path = ""
-    #    for i in range(0,50):
-    #        path+="T "+random
-    #header += '<path d = "M10 80 Q 52.5 10, 95 80 T 180 80" stroke="rgb(150,150,180)"  fill="transparent"/>'
-
-    footer = load_svg("footer")
-    title = '<rect x="290" y="5" width="150" height="40" fill="rgba(0,0,0,0.2)"/>'
-    title += '<text x="350" y="23" text-anchor="middle" font-family="Old English Text MT" font-size="16" font-weight="bold" fill="white" >'+school_name+'</text>'
-    title += '<text x="350" y="40" text-anchor="middle" font-family="Tahoma" font-size="6" font-style="italic" fill="white" >'+school_second+'</text>'
     title = header + content_text + '</svg>'
 
 
+    # Converting to PNG
     png = cairosvg.svg2png(bytestring=title,scale=5, unsafe=True)
     app.logger.warning("png done")
 
@@ -476,18 +482,6 @@ def generate(nameid=""):
 
 
 
-def main():
-    title = generate("")
-    # Creating file
-    new_path = uniquify('file.svg')
-    new_file = open(new_path, 'w')
-    new_file.write(title)
-
-    new_file.close()
-    print(new_path)
-
-
 if __name__ == "__main__":
-    #main()
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
