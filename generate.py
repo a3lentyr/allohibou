@@ -130,17 +130,15 @@ def load_svg(name,noreplace=False):
 
 def draw_places(draw_array):
     # forming list of places
-    form_list = ["rond"]
-    color_list = ["violet", "orange", "green"]
 
     places_list = []
-    for form in form_list:
-        for color in color_list:
-            places_list.append(form + "-" + color)
 
     for _ in range(2):
         for village_index in range(3):
             places_list.append("rond-village-"+str(village_index+1))
+
+    for _ in range(3):
+        places_list.append("rond-village")
 
     for _ in range(3):
         places_list.append("rond-port")
@@ -173,32 +171,10 @@ def draw_places(draw_array):
     return trans_places, d
 
 
-def draw_resources(trans_places,draw_array):
-    # forming list of places
-    form_list = ["res_weapon","res_food","treasure"]
-
-    resources_list = []
-    for _ in range(12):
-        for form in form_list:
-            resources_list.append(form)
-
-    random.shuffle(resources_list)
-    resources_index = 0
-    for i, _ in enumerate(trans_places):
-        for j in range(3):
-            x = trans_places[i][0]+(j-1)*18+2
-            y = trans_places[i][1]+15
-            name = resources_list[resources_index]
-            draw_array.append(DrawObject(x, y, name, "", 25, 1.5, 0, y+2001))
-            resources_index+=1
-
-
-
 def draw_marchandise(march_places_list, draw_array):
 
     m_list = []
 
-    # Complete with barrel
     for _ in range(9):
         for _ in range(3):
             m_list.append("resource-ship-")
@@ -447,7 +423,6 @@ def generate(nameid=""):
     trans_places, d = draw_places(draw_array)
     road_places_list, march_places_list = draw_roads(trans_places, d, draw_array)
     draw_marchandise(march_places_list,draw_array)
-    draw_resources(trans_places,draw_array)
 
     if True:
         # Adding background
