@@ -1,2 +1,3 @@
 noise
 flask
+Pillow

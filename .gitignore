@@ -2,3 +2,6 @@ file*
 *.pyc
 *.pyc
 tests
+.venv
+old
+output
