@@ -2,8 +2,10 @@ from PIL import Image, ImageDraw
 from flask import send_file, Flask
 import logging
 import os
+
 from lib.exporter import Exporter
 from lib.stackDrawer import StackDrawer
+from lib.mapCreator import MapCreator
 
 app = Flask(__name__)
 
@@ -18,9 +20,7 @@ def generate(nameid=""):
     im = Image.new("RGBA", canvas, (255, 255, 255, 255))
 
     stack = StackDrawer()
-
-    stack.add("rond-village", im.size)
-    stack.add("rond-port", (3508, 2480))
+    stack.merge(MapCreator(canvas).toStack())
 
     im = stack.drawAll(im, scaleDPI)
 
