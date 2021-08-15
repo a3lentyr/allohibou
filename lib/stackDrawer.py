@@ -9,11 +9,10 @@ class DrawingElement:
         self._depth = depth
         self._rotate = rotate
 
-    def draw(self, im, scale):
+    def draw(self, im, imgPasted, scale):
         bg_x, bg_y = self._center
 
-        img = Image.open("./img/" + self._name + ".png", "r")
-        img = img.rotate(self._rotate, Image.NEAREST, expand = 1)
+        img = imgPasted.rotate(self._rotate, Image.NEAREST, expand = 1)
         img_w, img_h = img.size
 
         newsize = (img_w * scale, img_h * scale)
@@ -26,6 +25,7 @@ class DrawingElement:
             bg_y + (img_h * scale) // 2,
         )
         im.paste(img, offset, img)
+
         return im
 
 
@@ -45,9 +45,20 @@ class StackDrawer:
 
     def drawAll(self, im, scale):
 
+        # Preload all images
+        image_list = list(set([drawingElement._name for drawingElement in self._stack ]))
+        image_dict = {}
+        for image_name in image_list:
+            image_dict[image_name] = Image.open("./img/" + image_name + ".png", "r")
+
+        # sort
         self._stack = sorted(self._stack, key = lambda x: x._depth*100000 + x._center[1])
 
+        # draw
         for drawingElement in self._stack:
-            im = drawingElement.draw(im, scale)
+
+            img = image_dict[drawingElement._name]
+            im = drawingElement.draw(im,img, scale)
 
         return im
+
