@@ -18,6 +18,9 @@ def generate(nameid=""):
     canvas = (3508 * scaleDPI, 2480 * scaleDPI)  # A4
 
     im = Image.new("RGBA", canvas, (255, 255, 255, 255))
+    background = Image.open("./img/" + "background.jpg", "r")
+    background = background.resize(canvas)
+    im.paste(background, (0, 0))
 
     stack = StackDrawer()
     stack.merge(MapCreator(canvas).toStack())
