@@ -7,6 +7,20 @@ from lib import commonMath
 from lib.road import Road
 
 
+class Obstacle:
+    _coord: Tuple[int, int]
+    _type: str
+
+    def __init__(self, coord: Tuple[int, int]):
+        self._coord = coord
+        self._type = "cross"
+
+    def toStack(self) -> StackDrawer:
+        stack = StackDrawer()
+        stack.add(self._type, self._coord, 0, sepia=False)
+        return stack
+
+
 class City:
     _coord: Tuple[int, int]
     _type: str
@@ -25,9 +39,11 @@ class MapCreator:
 
     _citiesPlaces: List[City]
     _roads: List[Road]
+    _obstacles: List[Obstacle]
     _canvasSize: Tuple[int, int]
     _canvasOffset: Tuple[int, int]
     _cityMargin: int
+    _mapMargin: int
 
     def __init__(
         self,
@@ -38,15 +54,27 @@ class MapCreator:
     ):
         self._citiesPlaces = []
         self._roads = []
+        self._obstacles = []
         self._canvasSize = canvasSize
         self._canvasOffset = canvasOffset
         self._cityMargin = floor(max(canvasSize[0], canvasSize[1]) * 0.2)
+        self._mapMargin = floor(max(canvasSize[0], canvasSize[1]) * 0.05)
+
+        self.addCross()
 
         self.placeCities(nCities)
         self.placeRoads(nRoads)
 
         self.allocateCities()
         self.allocateRoads()
+
+    def addCross(self):
+        margin = floor(self._mapMargin) * 3
+        coord = (
+            self._canvasOffset[0] + self._canvasSize[0] - margin,
+            self._canvasOffset[1] + self._canvasSize[1] - margin,
+        )
+        self._obstacles.append(Obstacle(coord))
 
     def placeCities(self, nCities):
         currentNumberOfCities = 0
@@ -59,6 +87,13 @@ class MapCreator:
 
             inter = False
             for otherCity in self._citiesPlaces:
+                dist = sqrt(
+                    (coord[0] - otherCity._coord[0]) ** 2
+                    + (coord[1] - otherCity._coord[1]) ** 2
+                )
+                inter = inter or dist < self._cityMargin
+
+            for otherCity in self._obstacles:
                 dist = sqrt(
                     (coord[0] - otherCity._coord[0]) ** 2
                     + (coord[1] - otherCity._coord[1]) ** 2
@@ -108,6 +143,24 @@ class MapCreator:
                     (x, y + self._cityMargin / 2),
                 )
 
+            # roads cannot intersect existing obstacles
+            for otherCity in self._obstacles:
+                if otherCity._coord == start or otherCity._coord == end:
+                    continue
+                x, y = otherCity._coord
+                inter = inter or commonMath.intersectLines(
+                    start,
+                    end,
+                    (x - self._cityMargin / 2, y),
+                    (x + self._cityMargin / 2, y),
+                )
+                inter = inter or commonMath.intersectLines(
+                    start,
+                    end,
+                    (x, y - self._cityMargin / 2),
+                    (x, y + self._cityMargin / 2),
+                )
+
             if not inter:
                 self._roads.append(Road(start, end))
                 currentNumberOfRoads += 1
@@ -140,6 +193,9 @@ class MapCreator:
     def toStack(self) -> StackDrawer:
         stack = StackDrawer()
 
+        for obstacle in self._obstacles:
+            stack.merge(obstacle.toStack())
+
         for city in self._citiesPlaces:
             stack.merge(city.toStack())
 
@@ -149,11 +205,11 @@ class MapCreator:
 
     def getNonIntersectRandomCoordinates(self) -> Tuple[int, int]:
         x = random.randint(
-            self._canvasOffset[0] + floor(self._cityMargin / 10),
-            self._canvasOffset[0] + self._canvasSize[0] - floor(self._cityMargin / 10),
+            self._canvasOffset[0] + floor(self._mapMargin),
+            self._canvasOffset[0] + self._canvasSize[0] - floor(self._mapMargin),
         )
         y = random.randint(
-            self._canvasOffset[1] + floor(self._cityMargin / 10),
-            self._canvasOffset[1] + self._canvasSize[1] - floor(self._cityMargin / 10),
+            self._canvasOffset[1] + floor(self._mapMargin),
+            self._canvasOffset[1] + self._canvasSize[1] - floor(self._mapMargin),
         )
         return (x, y)

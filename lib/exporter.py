@@ -18,5 +18,6 @@ class Exporter:
 
         img_io = BytesIO()
         im.save(img_io, "JPEG", quality=quality)
+        im.close()
         img_io.seek(0)
         return send_file(img_io, mimetype="image/jpeg")

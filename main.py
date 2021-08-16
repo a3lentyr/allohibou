@@ -21,11 +21,18 @@ def generate(nameid=""):
     background = Image.open("./img/" + "background.jpg", "r")
     background = background.resize(canvas)
     im.paste(background, (0, 0))
+    background.close()
+
+    foreground = Image.open("./img/" + "foreground.png", "r")
+    foreground = foreground.resize(background.size)
 
     stack = StackDrawer()
     stack.merge(MapCreator(canvas).toStack())
 
     im = stack.drawAll(im, scaleDPI)
+
+    im.paste(foreground, (0, 0), foreground)
+    foreground.close()
 
     return Exporter.export(im)
 

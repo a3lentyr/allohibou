@@ -1,13 +1,21 @@
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageEnhance
 from typing import Tuple, List
 
 
 class DrawingElement:
-    def __init__(self, name: str, center: Tuple[int, int], depth: int, rotate: float):
+    def __init__(
+        self,
+        name: str,
+        center: Tuple[int, int],
+        depth: int,
+        rotate: float,
+        sepia: bool = True,
+    ):
         self._name = name
         self._center = center
         self._depth = depth
         self._rotate = rotate
+        self._sepia = sepia
 
     def draw(self, im, imgPasted, scale):
         bg_x, bg_y = self._center
@@ -37,23 +45,38 @@ class StackDrawer:
         self._stack = []
 
     def add(
-        self, name: str, center: Tuple[int, int], depth: int = 0, rotate: float = 0
+        self,
+        name: str,
+        center: Tuple[int, int],
+        depth: int = 0,
+        rotate: float = 0,
+        sepia: bool = True,
     ):
-        self._stack.append(DrawingElement(name, center, depth, rotate))
+        self._stack.append(DrawingElement(name, center, depth, rotate, sepia))
 
     def merge(self, stack):
         for element in stack._stack:
             self._stack.append(element)
 
-    def drawAll(self, im, scale, sepia=True):
+    def drawAll(self, im, scale):
 
         # Preload all images
-        image_list = list(set([drawingElement._name for drawingElement in self._stack]))
+        image_list = list(
+            set(
+                [
+                    (drawingElement._name, drawingElement._sepia)
+                    for drawingElement in self._stack
+                ]
+            )
+        )
         image_dict = {}
-        for image_name in image_list:
+        for image_name, sepia in image_list:
             image_target = Image.open("./img/" + image_name + ".png", "r")
             if sepia:
-                image_target = self.sepia(image_target)
+                # image_target = self.sepia(image_target)
+
+                converter = ImageEnhance.Color(image_target)
+                image_target = converter.enhance(0.5)
             image_dict[image_name] = image_target
 
         # sort
@@ -66,6 +89,9 @@ class StackDrawer:
 
             img = image_dict[drawingElement._name]
             im = drawingElement.draw(im, img, scale)
+
+        for name, img in image_dict.items():
+            img.close()
 
         return im
 
