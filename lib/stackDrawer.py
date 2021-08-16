@@ -17,20 +17,17 @@ class DrawingElement:
         self._rotate = rotate
         self._sepia = sepia
 
-    def draw(self, im, imgPasted, scale):
+    def draw(self, im, imgPasted):
         bg_x, bg_y = self._center
 
         img = imgPasted.rotate(self._rotate, Image.NEAREST, expand=1)
         img_w, img_h = img.size
 
-        newsize = (img_w * scale, img_h * scale)
-        img = img.resize(newsize)
-
         offset = (
-            bg_x - (img_w * scale) // 2,
-            bg_y - (img_h * scale) // 2,
-            bg_x + (img_w * scale) // 2,
-            bg_y + (img_h * scale) // 2,
+            bg_x - (img_w) // 2,
+            bg_y - (img_h) // 2,
+            bg_x + (img_w) // 2,
+            bg_y + (img_h) // 2,
         )
         im.paste(img, offset, img)
 
@@ -77,6 +74,11 @@ class StackDrawer:
 
                 converter = ImageEnhance.Color(image_target)
                 image_target = converter.enhance(0.5)
+
+            img_w, img_h = image_target.size
+            newsize = (img_w * scale, img_h * scale)
+            image_target = image_target.resize(newsize)
+
             image_dict[image_name] = image_target
 
         # sort
@@ -88,7 +90,7 @@ class StackDrawer:
         for drawingElement in self._stack:
 
             img = image_dict[drawingElement._name]
-            im = drawingElement.draw(im, img, scale)
+            im = drawingElement.draw(im, img)
 
         for name, img in image_dict.items():
             img.close()

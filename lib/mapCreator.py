@@ -10,14 +10,16 @@ from lib.road import Road
 class Obstacle:
     _coord: Tuple[int, int]
     _type: str
+    _sepia: bool
 
-    def __init__(self, coord: Tuple[int, int]):
+    def __init__(self, coord: Tuple[int, int], sepia: bool = False):
         self._coord = coord
         self._type = "cross"
+        self._sepia = sepia
 
     def toStack(self) -> StackDrawer:
         stack = StackDrawer()
-        stack.add(self._type, self._coord, 0, sepia=False)
+        stack.add(self._type, self._coord, 0, sepia=self._sepia)
         return stack
 
 
@@ -43,6 +45,7 @@ class MapCreator:
     _canvasSize: Tuple[int, int]
     _canvasOffset: Tuple[int, int]
     _cityMargin: int
+    _obstacleMargin: int
     _mapMargin: int
 
     def __init__(
@@ -58,9 +61,11 @@ class MapCreator:
         self._canvasSize = canvasSize
         self._canvasOffset = canvasOffset
         self._cityMargin = floor(max(canvasSize[0], canvasSize[1]) * 0.2)
-        self._mapMargin = floor(max(canvasSize[0], canvasSize[1]) * 0.05)
+        self._obstacleMargin = floor(max(canvasSize[0], canvasSize[1]) * 0.07)
+        self._mapMargin = floor(max(canvasSize[0], canvasSize[1]) * 0.07)
 
         self.addCross()
+        # self.placeLand()
 
         self.placeCities(nCities)
         self.placeRoads(nRoads)
@@ -68,8 +73,22 @@ class MapCreator:
         self.allocateCities()
         self.allocateRoads()
 
+    def placeLand(self):
+
+        landsize = 115 * 4
+
+        for i in range(0, 10):
+            coord = (
+                self._canvasOffset[0] + i * landsize,
+                self._canvasOffset[1] + self._canvasSize[1] // 2,
+            )
+            land = Obstacle(coord)
+            land._type = "land"
+
+            self._obstacles.append(land)
+
     def addCross(self):
-        margin = floor(self._mapMargin) * 3
+        margin = floor(self._mapMargin) * 2
         coord = (
             self._canvasOffset[0] + self._canvasSize[0] - margin,
             self._canvasOffset[1] + self._canvasSize[1] - margin,
@@ -98,7 +117,7 @@ class MapCreator:
                     (coord[0] - otherCity._coord[0]) ** 2
                     + (coord[1] - otherCity._coord[1]) ** 2
                 )
-                inter = inter or dist < self._cityMargin
+                inter = inter or dist < self._obstacleMargin
 
             if not inter:
                 self._citiesPlaces.append(City(coord))
