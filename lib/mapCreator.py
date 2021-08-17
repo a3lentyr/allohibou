@@ -43,6 +43,7 @@ class MapCreator:
     _citiesPlaces: List[City]
     _roads: List[Road]
     _obstacles: List[Obstacle]
+    _mountains: List[Mountains]
     _canvasSize: Tuple[int, int]
     _canvasOffset: Tuple[int, int]
     _cityMargin: int
@@ -62,11 +63,12 @@ class MapCreator:
     ):
         self._citiesPlaces = []
         self._roads = []
+        self._mountains = []
         self._obstacles = []
         self._canvasSize = canvasSize
         self._canvasOffset = canvasOffset
         self._cityMargin = floor(max(canvasSize[0], canvasSize[1]) * 0.15)
-        self._obstacleMargin = floor(max(canvasSize[0], canvasSize[1]) * 0.07)
+        self._obstacleMargin = floor(max(canvasSize[0], canvasSize[1]) * 0.05)
         self._mapMargin = floor(max(canvasSize[0], canvasSize[1]) * 0.07)
         self._coastalPlaces = coastalPlaces
         self._mountainsPlaces = mountainsPlaces
@@ -84,13 +86,15 @@ class MapCreator:
 
         random.shuffle(self._mountainsPlaces)
 
-        for i in range(0, 10):
+        for i in range(0, 3):
+            if len(self._mountainsPlaces) == 0:
+                break
 
             coord = self._mountainsPlaces.pop(1)
             land = Mountains(coord)
             land._type = "Mountains" + str(random.randint(1, 3))
 
-            self._obstacles.append(land)
+            self._mountains.append(land)
 
     def addCross(self):
         margin = floor(self._mapMargin) * 2
@@ -217,6 +221,9 @@ class MapCreator:
 
     def toStack(self) -> StackDrawer:
         stack = StackDrawer()
+
+        for mountains in self._mountains:
+            stack.merge(mountains.toStack())
 
         for obstacle in self._obstacles:
             stack.merge(obstacle.toStack())

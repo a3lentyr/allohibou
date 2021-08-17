@@ -4,6 +4,10 @@ import numpy as np
 import math
 from PIL import Image
 
+import multiprocessing
+import functools
+from itertools import product
+
 
 class Color:
 
@@ -43,6 +47,49 @@ class Color:
         self.SetColor(f, f, f)
 
 
+def apply_gradient_noise(
+    i,
+    j,
+    mapSize,
+    x_starting_pos,
+    y_starting_pos,
+    scale,
+    random_nr,
+    octaves,
+    persistance,
+    lacunarity,
+    max_grad,
+):
+
+    center_x, center_y = mapSize[1] // 2, mapSize[0] // 2
+
+    noiseValue = noise.pnoise3(
+        (i + y_starting_pos) / scale,
+        (j + x_starting_pos) / scale,
+        random_nr,
+        octaves=octaves,
+        persistence=persistance,
+        lacunarity=lacunarity,
+        repeatx=10000000,
+        repeaty=10000000,
+        base=0,
+    )
+
+    distx = abs(j - center_x)
+    disty = abs(i - center_y)
+    dist = math.sqrt(distx * distx + disty * disty)
+
+    value = -(dist / max_grad - 0.5) * 2.0 / 20
+    if value > 0:
+        value *= 20
+
+    returnValue = noiseValue * value / 20
+    if returnValue > 0:
+        returnValue *= 20
+
+    return returnValue
+
+
 class GenerateMap:
     def __init__(
         self,
@@ -67,8 +114,6 @@ class GenerateMap:
         self.mapSize = size  # size in pixels
         self.mapCenter = (self.mapSize[0] / 2, self.mapSize[1] / 2)
 
-        self.heightMap = np.zeros(self.mapSize)
-
         self.randomColorRange = color_range
         self.colorPerlinScale = color_perlin_scale
 
@@ -80,26 +125,40 @@ class GenerateMap:
 
     def generate_map(self):
         random_nr = random.randint(0, self.mapSize[0])
-        # random_nr = 3
-        for i in range(self.mapSize[0]):
-            for j in range(self.mapSize[1]):
 
-                new_i = i + self.y_starting_pos
-                new_j = j + self.x_starting_pos
+        max_grad = (
+            math.sqrt(
+                self.mapSize[0] * self.mapSize[0] + self.mapSize[1] * self.mapSize[1]
+            )
+            / 2
+        )
 
-                self.heightMap[i][j] = noise.pnoise3(
-                    new_i / self.scale,
-                    new_j / self.scale,
-                    random_nr,
-                    octaves=self.octaves,
-                    persistence=self.persistance,
-                    lacunarity=self.lacunarity,
-                    repeatx=10000000,
-                    repeaty=10000000,
-                    base=0,
-                )
+        partialapply_gradient_noise = functools.partial(
+            apply_gradient_noise,
+            mapSize=self.mapSize,
+            x_starting_pos=self.x_starting_pos,
+            y_starting_pos=self.y_starting_pos,
+            scale=self.scale,
+            random_nr=random_nr,
+            octaves=self.octaves,
+            persistance=self.persistance,
+            lacunarity=self.lacunarity,
+            max_grad=max_grad,
+        )
+        coord = [(i, j) for i in range(self.mapSize[0]) for j in range(self.mapSize[1])]
+
+        with multiprocessing.Pool(processes=8) as pool:
+            gradient = np.reshape(
+                pool.starmap(partialapply_gradient_noise, coord), self.mapSize
+            )
+
+        # get it between 0 and 1
+        max_grad = np.max(gradient)
+        gradient = gradient / max_grad
+
         print("monochrome map created")
-        gradient = self.create_circular_gradient(self.heightMap)
+        im = Image.fromarray(np.uint8(gradient)).convert("RGB")
+
         color_map, mask, coastalPlaces, mountainsPlaces = self.add_color(gradient)
 
         return color_map, mask, coastalPlaces, mountainsPlaces
@@ -121,57 +180,14 @@ class GenerateMap:
                     coastalPlaces.append((j, i))
                 elif world[i][j] < self.threshold + 0.05:
                     color_world[i][j] = self.green
-                elif world[i][j] > self.threshold + 0.6:
+                elif world[i][j] > self.threshold + 0.5:
                     mountainsPlaces.append((j, i))
+                    color_world[i][j] = self.land
                 else:
                     color_world[i][j] = self.land
 
         print("color map created")
         return color_world, mask, coastalPlaces, mountainsPlaces
-
-    def create_circular_gradient(self, world):
-        center_x, center_y = self.mapSize[1] // 2, self.mapSize[0] // 2
-        circle_grad = np.zeros_like(world)
-
-        for y in range(world.shape[0]):
-            for x in range(world.shape[1]):
-                distx = abs(x - center_x)
-                disty = abs(y - center_y)
-                dist = math.sqrt(distx * distx + disty * disty)
-                circle_grad[y][x] = dist
-
-        # get it between -1 and 1
-        max_grad = np.max(circle_grad)
-        circle_grad = circle_grad / max_grad
-        circle_grad -= 0.5
-        circle_grad *= 2.0
-        circle_grad = -circle_grad
-
-        # shrink gradient
-        for y in range(world.shape[0]):
-            for x in range(world.shape[1]):
-                if circle_grad[y][x] > 0:
-                    circle_grad[y][x] *= 20
-
-        # get it between 0 and 1
-        max_grad = np.max(circle_grad)
-        circle_grad = circle_grad / max_grad
-        grad_world = self.apply_gradient_noise(world, circle_grad)
-        return grad_world
-
-    def apply_gradient_noise(self, world, c_grad):
-        world_noise = np.zeros_like(world)
-
-        for i in range(self.mapSize[0]):
-            for j in range(self.mapSize[1]):
-                world_noise[i][j] = world[i][j] * c_grad[i][j]
-                if world_noise[i][j] > 0:
-                    world_noise[i][j] *= 20
-
-        # get it between 0 and 1
-        max_grad = np.max(world_noise)
-        world_noise = world_noise / max_grad
-        return world_noise
 
 
 class LandGenerator:

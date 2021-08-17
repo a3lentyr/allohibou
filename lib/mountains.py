@@ -13,5 +13,5 @@ class Mountains:
 
     def toStack(self) -> StackDrawer:
         stack = StackDrawer()
-        stack.add(self._type, self._coord, 0)
+        stack.add(self._type, self._coord, 0, sepia=False)
         return stack
