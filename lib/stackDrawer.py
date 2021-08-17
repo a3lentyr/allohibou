@@ -25,10 +25,11 @@ class DrawingElement:
 
         offset = (
             bg_x - (img_w) // 2,
-            bg_y - (img_h) // 2,
-            bg_x + (img_w) // 2,
-            bg_y + (img_h) // 2,
+            bg_y - (img_h) // 2  # ,
+            # bg_x + (img_w) // 2,
+            # bg_y + (img_h) // 2,
         )
+        print(self._name, offset)
         im.paste(img, offset, img)
 
         return im
@@ -92,7 +93,7 @@ class StackDrawer:
             img = image_dict[drawingElement._name]
             im = drawingElement.draw(im, img)
 
-        for name, img in image_dict.items():
+        for _, img in image_dict.items():
             img.close()
 
         return im
