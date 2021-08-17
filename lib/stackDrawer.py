@@ -23,13 +23,7 @@ class DrawingElement:
         img = imgPasted.rotate(self._rotate, Image.NEAREST, expand=1)
         img_w, img_h = img.size
 
-        offset = (
-            bg_x - (img_w) // 2,
-            bg_y - (img_h) // 2  # ,
-            # bg_x + (img_w) // 2,
-            # bg_y + (img_h) // 2,
-        )
-        print(self._name, offset)
+        offset = (bg_x - (img_w) // 2, bg_y - (img_h) // 2)
         im.paste(img, offset, img)
 
         return im

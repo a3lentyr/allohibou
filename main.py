@@ -8,6 +8,7 @@ from lib.exporter import Exporter
 from lib.stackDrawer import StackDrawer
 from lib.mapCreator import MapCreator
 from lib.landGenerator import LandGenerator
+from lib.mountains import Mountains
 
 app = Flask(__name__)
 
@@ -36,7 +37,9 @@ def drawLand(img):
     w, h = img.size
 
     generator = LandGenerator()
-    land, mask = generator.generate((img.size[1], img.size[0]))
+    land, mask, coastalPlaces, mountainsPlaces = generator.generate(
+        (img.size[1], img.size[0])
+    )
     img.paste(land, (0, 0))
 
     # filling with water
@@ -46,7 +49,7 @@ def drawLand(img):
     fullwater.close()
 
     img.save("test.png")
-    return img
+    return img, coastalPlaces, mountainsPlaces
 
 
 def createImage():
@@ -55,14 +58,17 @@ def createImage():
     scaleDPI = 1
     canvas = (3508 * scaleDPI, 2480 * scaleDPI)  # A4
 
-    # find places
-    stack = StackDrawer()
-    stack.merge(MapCreator(canvas).toStack())
+    # creating terrain
 
-    # Drawing
     im = Image.new("RGBA", canvas, BG_COLOR)
 
-    im = drawLand(im)
+    im, coastalPlaces, mountainsPlaces = drawLand(im)
+
+    # find places
+    stack = StackDrawer()
+    stack.merge(MapCreator(canvas, coastalPlaces, mountainsPlaces).toStack())
+
+    # Drawing
 
     im = stack.drawAll(im, scaleDPI)
 

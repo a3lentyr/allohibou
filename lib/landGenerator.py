@@ -49,7 +49,7 @@ class GenerateMap:
         size=(50, 50),
         color_range=10,
         color_perlin_scale=0.025,
-        scale=3500,
+        scale=350 * 4,
         octaves=6,
         persistance=0.6,
         lacunarity=2.0,
@@ -68,24 +68,17 @@ class GenerateMap:
         self.mapCenter = (self.mapSize[0] / 2, self.mapSize[1] / 2)
 
         self.heightMap = np.zeros(self.mapSize)
-        # self.colorMap = [[Color() for j in range(self.mapSize)] for i in range(self.mapSize)]
 
         self.randomColorRange = color_range
         self.colorPerlinScale = color_perlin_scale
 
-        self.lightblue = [255, 0, 0]  # not used
         self.blue = [209, 167, 127]
-        self.darkblue = [0, 0, 0]
-        self.green = [232, 205, 160]
-        self.darkgreen = [201, 174, 127]
-        self.sandy = [172, 136, 78]
-        self.beach = [238, 214, 175]
-        self.snow = [104, 67, 51]
-        self.mountain = [176, 138, 91]
+        self.green = [104, 67, 51]
+        self.land = [232, 205, 160]
 
         self.threshold = -0.01
 
-    def generate_map(self, map_type=""):
+    def generate_map(self):
         random_nr = random.randint(0, self.mapSize[0])
         # random_nr = 3
         for i in range(self.mapSize[0]):
@@ -107,32 +100,34 @@ class GenerateMap:
                 )
         print("monochrome map created")
         gradient = self.create_circular_gradient(self.heightMap)
-        color_map = self.add_color(gradient)
-        return color_map
+        color_map, mask, coastalPlaces, mountainsPlaces = self.add_color(gradient)
+
+        return color_map, mask, coastalPlaces, mountainsPlaces
 
     def add_color(self, world):
         color_world = np.zeros(world.shape + (3,))
+
+        mask = np.zeros((self.mapSize[0], self.mapSize[1]))
+        coastalPlaces = []
+        mountainsPlaces = []
+
         # print(color_world)
         for i in range(self.mapSize[0]):
             for j in range(self.mapSize[1]):
                 if world[i][j] < self.threshold + 0.02:
-                    color_world[i][j] = self.darkblue
+                    mask[i][j] = 1
                 elif world[i][j] < self.threshold + 0.03:
                     color_world[i][j] = self.blue
-                elif world[i][j] < self.threshold + 0.058:
-                    color_world[i][j] = self.sandy
-                elif world[i][j] < self.threshold + 0.1:
-                    color_world[i][j] = self.beach
-                elif world[i][j] < self.threshold + 0.25:
+                    coastalPlaces.append((j, i))
+                elif world[i][j] < self.threshold + 0.05:
                     color_world[i][j] = self.green
-                elif world[i][j] < self.threshold + 0.6:
-                    color_world[i][j] = self.darkgreen
-                elif world[i][j] < self.threshold + 0.7:
-                    color_world[i][j] = self.mountain
-                else:  # elif world[i][j] < self.threshold + 1.0:
-                    color_world[i][j] = self.snow
+                elif world[i][j] > self.threshold + 0.6:
+                    mountainsPlaces.append((j, i))
+                else:
+                    color_world[i][j] = self.land
+
         print("color map created")
-        return color_world
+        return color_world, mask, coastalPlaces, mountainsPlaces
 
     def create_circular_gradient(self, world):
         center_x, center_y = self.mapSize[1] // 2, self.mapSize[0] // 2
@@ -182,15 +177,8 @@ class GenerateMap:
 class LandGenerator:
     def generate(self, canvas):
         map_data = GenerateMap(canvas, x_starting_pos=0, y_starting_pos=0)
-        mono_map = map_data.generate_map("island")
+
+        mono_map, mask, coastalPlaces, mountainsPlaces = map_data.generate_map()
         im = Image.fromarray(np.uint8(mono_map)).convert("RGB")
-
-        mask = np.zeros((map_data.mapSize[0], map_data.mapSize[1]))
-
-        for i in range(map_data.mapSize[0]):
-            for j in range(map_data.mapSize[1]):
-                if (mono_map[i][j] == map_data.darkblue).all():
-                    mask[i][j] = 1
-
         watermask = Image.fromarray((mask * 255).astype("uint8"), mode="L")
-        return im, watermask
+        return im, watermask, coastalPlaces, mountainsPlaces

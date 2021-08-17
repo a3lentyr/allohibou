@@ -5,6 +5,7 @@ from typing import List, Tuple
 from lib.stackDrawer import StackDrawer
 from lib import commonMath
 from lib.road import Road
+from lib.mountains import Mountains
 
 
 class Obstacle:
@@ -47,10 +48,14 @@ class MapCreator:
     _cityMargin: int
     _obstacleMargin: int
     _mapMargin: int
+    _coastalPlaces: List[Tuple[int, int]]
+    _mountainsPlaces: List[Tuple[int, int]]
 
     def __init__(
         self,
         canvasSize: Tuple[int, int],
+        coastalPlaces: List[Tuple[int, int]],
+        mountainsPlaces: List[Tuple[int, int]],
         canvasOffset: Tuple[int, int] = (0, 0),
         nCities=12,
         nRoads=21,
@@ -60,12 +65,14 @@ class MapCreator:
         self._obstacles = []
         self._canvasSize = canvasSize
         self._canvasOffset = canvasOffset
-        self._cityMargin = floor(max(canvasSize[0], canvasSize[1]) * 0.2)
+        self._cityMargin = floor(max(canvasSize[0], canvasSize[1]) * 0.15)
         self._obstacleMargin = floor(max(canvasSize[0], canvasSize[1]) * 0.07)
         self._mapMargin = floor(max(canvasSize[0], canvasSize[1]) * 0.07)
+        self._coastalPlaces = coastalPlaces
+        self._mountainsPlaces = mountainsPlaces
 
         self.addCross()
-        # self.placeLand()
+        self.placeMountains()
 
         self.placeCities(nCities)
         self.placeRoads(nRoads)
@@ -73,17 +80,15 @@ class MapCreator:
         self.allocateCities()
         self.allocateRoads()
 
-    def placeLand(self):
+    def placeMountains(self):
 
-        landsize = 115 * 4
+        random.shuffle(self._mountainsPlaces)
 
         for i in range(0, 10):
-            coord = (
-                self._canvasOffset[0] + i * landsize,
-                self._canvasOffset[1] + self._canvasSize[1] // 2,
-            )
-            land = Obstacle(coord)
-            land._type = "land"
+
+            coord = self._mountainsPlaces.pop(1)
+            land = Mountains(coord)
+            land._type = "Mountains" + str(random.randint(1, 3))
 
             self._obstacles.append(land)
 
@@ -96,6 +101,7 @@ class MapCreator:
         self._obstacles.append(Obstacle(coord))
 
     def placeCities(self, nCities):
+        random.shuffle(self._coastalPlaces)
         currentNumberOfCities = 0
 
         for _ in range(nCities * 1000):
@@ -223,6 +229,19 @@ class MapCreator:
         return stack
 
     def getNonIntersectRandomCoordinates(self) -> Tuple[int, int]:
+        while len(self._coastalPlaces) > 0:
+            x, y = self._coastalPlaces.pop(1)
+            if (
+                x > (self._canvasOffset[0] + floor(self._mapMargin))
+                and x
+                < (self._canvasOffset[0] + self._canvasSize[0] - floor(self._mapMargin))
+                and y > (self._canvasOffset[1] + floor(self._mapMargin))
+                and y
+                < (self._canvasOffset[1] + self._canvasSize[1] - floor(self._mapMargin))
+            ):
+                return (x, y)
+
+        # Else we return a random number
         x = random.randint(
             self._canvasOffset[0] + floor(self._mapMargin),
             self._canvasOffset[0] + self._canvasSize[0] - floor(self._mapMargin),
