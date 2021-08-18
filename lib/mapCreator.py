@@ -1,4 +1,4 @@
-from math import sqrt, floor
+from math import dist, sqrt, floor
 import random
 from typing import List, Tuple
 
@@ -86,7 +86,8 @@ class MapCreator:
 
         random.shuffle(self._mountainsPlaces)
 
-        for i in range(0, 3):
+        n_mountains = random.randint(2, 6)
+        for i in range(0, n_mountains):
             if len(self._mountainsPlaces) == 0:
                 break
 
@@ -98,10 +99,35 @@ class MapCreator:
 
     def addCross(self):
         margin = floor(self._mapMargin) * 2
-        coord = (
-            self._canvasOffset[0] + self._canvasSize[0] - margin,
-            self._canvasOffset[1] + self._canvasSize[1] - margin,
-        )
+        possiblecoord = [
+            (
+                self._canvasOffset[0] + margin,
+                self._canvasOffset[1] + margin,
+            ),
+            (
+                self._canvasOffset[0] + self._canvasSize[0] - margin,
+                self._canvasOffset[1] + self._canvasSize[1] - margin,
+            ),
+            (
+                self._canvasOffset[0] + margin,
+                self._canvasOffset[1] + self._canvasSize[1] - margin,
+            ),
+            (
+                self._canvasOffset[0] + self._canvasSize[0] - margin,
+                self._canvasOffset[1] + margin,
+            ),
+        ]
+        coord = random.choice(possiblecoord)
+        bestdistance = 0
+        # find place furthest from coast
+        for candidatX, candidatY in possiblecoord:
+            distance = 0
+            for x, y in random.sample(self._coastalPlaces, 100):
+                distance += (candidatX - x) ** 2 + (candidatY - y) ** 2
+            if distance > bestdistance:
+                bestdistance = distance
+                coord = (candidatX, candidatY)
+
         self._obstacles.append(Obstacle(coord))
 
     def placeCities(self, nCities):
@@ -180,14 +206,14 @@ class MapCreator:
                 inter = inter or commonMath.intersectLines(
                     start,
                     end,
-                    (x - self._cityMargin / 2, y),
-                    (x + self._cityMargin / 2, y),
+                    (x - self._obstacleMargin / 2, y),
+                    (x + self._obstacleMargin / 2, y),
                 )
                 inter = inter or commonMath.intersectLines(
                     start,
                     end,
-                    (x, y - self._cityMargin / 2),
-                    (x, y + self._cityMargin / 2),
+                    (x, y - self._obstacleMargin / 2),
+                    (x, y + self._obstacleMargin / 2),
                 )
 
             if not inter:

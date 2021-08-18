@@ -1,7 +1,6 @@
 from PIL import Image, ImageDraw, ImageFilter, ImageOps
 from flask import Flask
 import os
-import random
 import cProfile, pstats
 import pyximport
 
@@ -22,7 +21,8 @@ def createImage():
 
     # size of image
     scaleDPI = 1
-    canvas = (3508 * scaleDPI, 2480 * scaleDPI)  # A4
+    canvas = (2480 * scaleDPI, 3508 * scaleDPI)  # A4
+    layout = (2480 * scaleDPI * 2, 3508 * scaleDPI)  # A4
 
     # creating terrain
 
@@ -44,7 +44,11 @@ def createImage():
 
     foreground.close()
 
-    return im
+    imLayout = Image.new("RGBA", layout, BG_COLOR)
+
+    imLayout.paste(im, (0, 0))
+
+    return imLayout
 
 
 @app.route("/", defaults={"nameid": ""})

@@ -4,37 +4,41 @@ import numpy as np
 import math
 import time
 from PIL import Image
+import logging
+logging.basicConfig(level=logging.INFO)
 
 import multiprocessing
 import functools
 from itertools import product
 
 cimport numpy
+cimport cython
+from cython.parallel import prange
 
 
-def apply_gradient_noise(
-    i,
-    j,
-    mapSize,
-    x_starting_pos,
-    y_starting_pos,
-    scale,
-    random_nr,
-    octaves,
-    persistance,
-    lacunarity,
-    max_grad,
+@cython.boundscheck(False)
+@cython.wraparound(False)
+cdef double apply_gradient_noise(
+    int i,
+    int j,
+    int center_x,
+    int center_y,
+    double random_nr,
+    double max_grad
 ):
+    cdef double noiseValue, distx, disty, dist, value, returnValue
 
-    center_x, center_y = mapSize[1] // 2, mapSize[0] // 2
+    cdef int x_starting_pos = 0
+    cdef int y_starting_pos = 0
+    cdef double scale = 350*4
 
     noiseValue = noise.pnoise3(
         (i + y_starting_pos) / scale,
         (j + x_starting_pos) / scale,
         random_nr,
-        octaves=octaves,
-        persistence=persistance,
-        lacunarity=lacunarity,
+        octaves=6,
+        persistence=0.6,
+        lacunarity=2.0,
         repeatx=10000000,
         repeaty=10000000,
         base=0,
@@ -62,16 +66,10 @@ class GenerateMap:
         color_range=10,
         color_perlin_scale=0.025,
         scale=350 * 4,
-        octaves=6,
-        persistance=0.6,
-        lacunarity=2.0,
         x_starting_pos=0,
         y_starting_pos=0,
     ):
         self.scale = scale
-        self.octaves = octaves
-        self.persistance = persistance
-        self.lacunarity = lacunarity
 
         self.x_starting_pos = x_starting_pos
         self.y_starting_pos = y_starting_pos
@@ -88,47 +86,51 @@ class GenerateMap:
 
         self.threshold = -0.01
 
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
     def generate_map(self):
-        random_nr = random.randint(0, self.mapSize[0])
+
+        cdef int random_nr, i, j, center_x, center_y, width, height
+        cdef double max_grad, value
+        cdef numpy.ndarray[numpy.double_t, ndim=2]  gradient
+
+        width = self.mapSize[0]
+        height = self.mapSize[1]
+
+        random_nr = random.randint(0, width)
 
         max_grad = (
             math.sqrt(
-                self.mapSize[0] * self.mapSize[0] + self.mapSize[1] * self.mapSize[1]
+                width * width + height* height
             )
             / 2
         )
 
-        partialapply_gradient_noise = functools.partial(
-            apply_gradient_noise,
-            mapSize=self.mapSize,
-            x_starting_pos=self.x_starting_pos,
-            y_starting_pos=self.y_starting_pos,
-            scale=self.scale,
-            random_nr=random_nr,
-            octaves=self.octaves,
-            persistance=self.persistance,
-            lacunarity=self.lacunarity,
-            max_grad=max_grad,
-        )
-        coord = [(i, j) for i in range(self.mapSize[0]) for j in range(self.mapSize[1])]
+        gradient = np.zeros((width, height), dtype=np.double)
 
-        with multiprocessing.Pool(processes=16) as pool:
-            gradient = np.reshape(
-                pool.starmap(partialapply_gradient_noise, coord), self.mapSize
-            )
+        center_x = height // 2
+        center_y = width // 2
+
+        for i in range(width):
+            for j in range(height):
+                value = apply_gradient_noise( i,j,center_x,center_y,random_nr,max_grad)
+                gradient[i][j] = value
+
 
         # get it between 0 and 1
         max_grad = np.max(gradient)
         gradient = gradient / max_grad
 
         print("monochrome map created")
-        im = Image.fromarray(np.uint8(gradient)).convert("RGB")
+
 
         color_map, mask, coastalPlaces, mountainsPlaces = self.add_color(gradient)
+
 
         return color_map, mask, coastalPlaces, mountainsPlaces
 
     def add_color(self, world):
+
         color_world = np.zeros(world.shape + (3,))
 
         mask = np.zeros((self.mapSize[0], self.mapSize[1]))
@@ -182,7 +184,6 @@ class LandGenerator:
 
     def drawLand(self, img, BG_COLOR):
 
-        t1 = time.time()
 
         w, h = img.size
 
@@ -197,8 +198,5 @@ class LandGenerator:
         img.paste(fullwater, (0, 0), mask)
         fullwater.close()
 
-        t2 = time.time()
-        t = t2 - t1
-        print("%.20f" % t)
 
         return img, coastalPlaces, mountainsPlaces
