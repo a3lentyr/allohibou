@@ -68,7 +68,7 @@ class MapCreator:
         self._canvasSize = canvasSize
         self._canvasOffset = canvasOffset
         self._cityMargin = floor(max(canvasSize[0], canvasSize[1]) * 0.15)
-        self._obstacleMargin = floor(max(canvasSize[0], canvasSize[1]) * 0.05)
+        self._obstacleMargin = floor(max(canvasSize[0], canvasSize[1]) * 0.07)
         self._mapMargin = floor(max(canvasSize[0], canvasSize[1]) * 0.07)
         self._coastalPlaces = coastalPlaces
         self._mountainsPlaces = mountainsPlaces

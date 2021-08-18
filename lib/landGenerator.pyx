@@ -2,49 +2,14 @@ import random
 import noise
 import numpy as np
 import math
+import time
 from PIL import Image
 
 import multiprocessing
 import functools
 from itertools import product
 
-
-class Color:
-
-    # 0 -> 255
-
-    r = 0.0
-    g = 0.0
-    b = 0.0
-    a = 1.0
-
-    def __init__(self, r=0.0, g=0.0, b=0.0):
-        self.r = r
-        self.g = g
-        self.b = b
-        self.a = 1
-
-    def GetTuple(self):
-        return int(self.r), int(self.g), int(self.b)
-
-    def SetColor(self, r, g, b):
-        self.r = r
-        self.g = g
-        self.b = b
-
-    def Copy(self, color):
-        self.r = color.r
-        self.g = color.g
-        self.b = color.b
-
-    def SetWhite(self):
-        self.SetColor(1, 1, 1)
-
-    def SetBlack(self):
-        self.SetColor(0, 0, 0)
-
-    def SetColorFromGrayscale(self, f=0.0):
-        self.SetColor(f, f, f)
+cimport numpy
 
 
 def apply_gradient_noise(
@@ -147,7 +112,7 @@ class GenerateMap:
         )
         coord = [(i, j) for i in range(self.mapSize[0]) for j in range(self.mapSize[1])]
 
-        with multiprocessing.Pool(processes=8) as pool:
+        with multiprocessing.Pool(processes=16) as pool:
             gradient = np.reshape(
                 pool.starmap(partialapply_gradient_noise, coord), self.mapSize
             )
@@ -198,3 +163,42 @@ class LandGenerator:
         im = Image.fromarray(np.uint8(mono_map)).convert("RGB")
         watermask = Image.fromarray((mask * 255).astype("uint8"), mode="L")
         return im, watermask, coastalPlaces, mountainsPlaces
+
+    def tile(self, original, name, BG_COLOR):
+        img = Image.new("RGBA", original.size, BG_COLOR)
+
+        # Opens an image
+        bg = Image.open("./img/" + name, "r")
+
+        bg_w, bg_h = bg.size
+        w, h = img.size
+
+        for i in range(0, w, bg_w):
+            for j in range(0, h, bg_h):
+                img.paste(bg, (i, j))
+
+        bg.close()
+        return img
+
+    def drawLand(self, img, BG_COLOR):
+
+        t1 = time.time()
+
+        w, h = img.size
+
+        land, mask, coastalPlaces, mountainsPlaces = self.generate(
+            (img.size[1], img.size[0])
+        )
+        img.paste(land, (0, 0))
+
+        # filling with water
+        fullwater = self.tile(img, "wave.jpg", BG_COLOR)
+
+        img.paste(fullwater, (0, 0), mask)
+        fullwater.close()
+
+        t2 = time.time()
+        t = t2 - t1
+        print("%.20f" % t)
+
+        return img, coastalPlaces, mountainsPlaces

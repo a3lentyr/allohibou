@@ -8,11 +8,6 @@ class Exporter:
     @staticmethod
     def export(im, scale=5, quality=100):
 
-        # make thumbnail
-        canvas = im.size
-        thumb = canvas[0] / scale, canvas[1] / scale
-        im.thumbnail(thumb)
-
         # save image
         im = im.convert("RGB")
 

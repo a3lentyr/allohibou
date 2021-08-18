@@ -2,3 +2,4 @@ noise
 flask
 Pillow
 numpy
+cython

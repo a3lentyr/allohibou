@@ -7,3 +7,8 @@ old
 output
 test - Copie.png
 img/wave - Copie.jpg
+*.pyd
+*.obj
+*.lib
+*.so
+*.exp

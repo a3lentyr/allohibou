@@ -3,6 +3,9 @@ from flask import Flask
 import os
 import random
 import cProfile, pstats
+import pyximport
+
+pyximport.install()
 
 from lib.exporter import Exporter
 from lib.stackDrawer import StackDrawer
@@ -15,43 +18,6 @@ app = Flask(__name__)
 BG_COLOR = (232, 205, 160, 255)
 
 
-def tile(original, name):
-    img = Image.new("RGBA", original.size, BG_COLOR)
-
-    # Opens an image
-    bg = Image.open("./img/" + name, "r")
-
-    bg_w, bg_h = bg.size
-    w, h = img.size
-
-    for i in range(0, w, bg_w):
-        for j in range(0, h, bg_h):
-            img.paste(bg, (i, j))
-
-    bg.close()
-    return img
-
-
-def drawLand(img):
-
-    w, h = img.size
-
-    generator = LandGenerator()
-    land, mask, coastalPlaces, mountainsPlaces = generator.generate(
-        (img.size[1], img.size[0])
-    )
-    img.paste(land, (0, 0))
-
-    # filling with water
-    fullwater = tile(img, "wave.jpg")
-
-    img.paste(fullwater, (0, 0), mask)
-    fullwater.close()
-
-    img.save("test.png")
-    return img, coastalPlaces, mountainsPlaces
-
-
 def createImage():
 
     # size of image
@@ -62,7 +28,8 @@ def createImage():
 
     im = Image.new("RGBA", canvas, BG_COLOR)
 
-    im, coastalPlaces, mountainsPlaces = drawLand(im)
+    generator = LandGenerator()
+    im, coastalPlaces, mountainsPlaces = generator.drawLand(im, BG_COLOR)
 
     # find places
     stack = StackDrawer()
@@ -101,6 +68,6 @@ def profile():
 
 
 if __name__ == "__main__":
-    profile()
+    # profile()
     port = int(os.environ.get("PORT", 5000))
-    # app.run(host="0.0.0.0", port=port)
+    app.run(host="0.0.0.0", port=port)
