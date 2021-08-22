@@ -3,6 +3,7 @@ from flask import Flask
 import os
 import cProfile, pstats
 import pyximport
+import json
 
 pyximport.install()
 
@@ -11,19 +12,14 @@ from lib.stackDrawer import StackDrawer
 from lib.mapCreator import MapCreator
 from lib.landGenerator import LandGenerator
 from lib.mountains import Mountains
+from lib.missionCreator import MissionCreator
 
 app = Flask(__name__)
 
 BG_COLOR = (232, 205, 160, 255)
 
 
-def createImage():
-
-    # size of image
-    scaleDPI = 1
-    canvas = (2480 * scaleDPI, 3508 * scaleDPI)  # A4
-    layout = (2480 * scaleDPI * 2, 3508 * scaleDPI)  # A4
-
+def createTerrain(canvas, scaleDPI):
     # creating terrain
 
     im = Image.new("RGBA", canvas, BG_COLOR)
@@ -43,10 +39,21 @@ def createImage():
     im.paste(foreground, (0, 0), foreground)
 
     foreground.close()
+    return im
+
+
+def createImage():
+
+    # size of image
+    scaleDPI = 1
+    canvas = (2480 * scaleDPI, 3508 * scaleDPI)  # A4
+    layout = (2480 * scaleDPI * 2, 3508 * scaleDPI)  # A4
 
     imLayout = Image.new("RGBA", layout, BG_COLOR)
-
-    imLayout.paste(im, (0, 0))
+    # imLayout.paste(createTerrain(canvas, scaleDPI), (0, 0))
+    imLayout.paste(
+        MissionCreator(BG_COLOR).createMissionSheet(canvas, scaleDPI), (canvas[0], 0)
+    )
 
     return imLayout
 

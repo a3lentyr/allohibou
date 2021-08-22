@@ -1,0 +1,20 @@
+{
+    "missions": [
+        {
+            "icon": "rond-village",
+            "missionBackground": "villageMission"
+        },
+        {
+            "icon": "rond-port",
+            "forceIcon": "parrot",
+            "forceScale": "force1",
+            "missionBackground": "portMission"
+        },
+        {
+            "icon": "rond-village-icon",
+            "forceIcon": "pirate-patch",
+            "forceScale": "force1",
+            "missionBackground": "square"
+        }
+    ]
+}
