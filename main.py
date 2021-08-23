@@ -1,5 +1,5 @@
 from PIL import Image, ImageDraw, ImageFilter, ImageOps
-from flask import Flask
+from flask import Flask, send_from_directory
 import os
 import cProfile, pstats
 import pyximport
@@ -10,7 +10,7 @@ pyximport.install()
 from lib.exporter import Exporter
 from lib.stackDrawer import StackDrawer
 from lib.mapCreator import MapCreator
-from lib.landGenerator import LandGenerator
+from pyx.landGenerator import LandGenerator
 from lib.mountains import Mountains
 from lib.missionCreator import MissionCreator
 
@@ -50,7 +50,7 @@ def createImage():
     layout = (2480 * scaleDPI * 2, 3508 * scaleDPI)  # A4
 
     imLayout = Image.new("RGBA", layout, BG_COLOR)
-    # imLayout.paste(createTerrain(canvas, scaleDPI), (0, 0))
+    imLayout.paste(createTerrain(canvas, scaleDPI), (0, 0))
     imLayout.paste(
         MissionCreator(BG_COLOR).createMissionSheet(canvas, scaleDPI), (canvas[0], 0)
     )
@@ -63,6 +63,15 @@ def createImage():
 def generate(nameid=""):
     im = createImage()
     return Exporter.export(im)
+
+
+@app.route("/favicon.ico")
+def favicon():
+    return send_from_directory(
+        os.path.join(app.root_path, "static"),
+        "img/rond-port.png",
+        mimetype="image/vnd.microsoft.icon",
+    )
 
 
 def profile():

@@ -1,6 +1,9 @@
 import json
 from PIL import Image, ImageDraw, ImageFilter, ImageOps
 from math import floor
+import random
+
+# attribution : https://crossheadstudios.com/
 
 
 class MissionCreator:
@@ -25,7 +28,29 @@ class MissionCreator:
     def createMissionSheet(self, canvas, scaleDPI):
         # mission sheet
         imMission = Image.new("RGBA", canvas, self.BG_COLOR)
-        bomb = Image.open("./img/" + "bomb.png", "r")
+
+        common_bonus = [
+            "bomb",
+            "parrot",
+            "pirate-patch",
+            "jolly-roger",
+        ]
+
+        rare_bonus = [
+            "diamond",
+            "palm-tree",
+            "pirate-ship",
+            "rond-village-2-bonus",
+        ]
+
+        unique_bonus = [
+            "rond-village-1-bonus",
+            "rond-village-3-bonus",
+        ]
+
+        bonus_list = 6 * common_bonus + 3 * rare_bonus + unique_bonus  # 12+8+8 = 28
+
+        random.shuffle(bonus_list)
 
         with open("missionDescriptor.json") as f:
             missions = json.load(f)["missions"]
@@ -67,19 +92,166 @@ class MissionCreator:
                     scaleDPI,
                     0.7,
                 )
+            if missions[i]["type"] == "port":
+                self.createPortMission(imMission, canvas, offset, scaleDPI, bonus_list)
 
-            # Add port
+            if missions[i]["type"] == "village":
+                self.createVillageMission(
+                    imMission, canvas, offset, scaleDPI, bonus_list
+                )
+            if missions[i]["type"] == "market":
+                self.createMarketMission(
+                    imMission, canvas, offset, scaleDPI, bonus_list
+                )
 
-            for box in range(0, 12):
+        return imMission
+
+    def createVillageMission(self, imMission, canvas, offset, scaleDPI, bonus_list):
+        for x in range(0, 6):
+            MissionCreator.pasteCenter(
+                imMission,
+                "right-arrow",
+                (canvas[0] * (x + 1)) // 7,
+                canvas[1] // 9,
+                offset,
+                scaleDPI,
+                0.5,
+            )
+
+            bonus = bonus_list.pop()
+            MissionCreator.pasteCenter(
+                imMission,
+                bonus,
+                int(floor(canvas[0] * (x + 1.5))) // 7,
+                canvas[1] // 9,
+                offset,
+                scaleDPI,
+                0.6,
+            )
+
+            if x != 0:
+                MissionCreator.pasteCenter(
+                    imMission,
+                    "left-arrow",
+                    (canvas[0] * (x + 1)) // 7,
+                    (canvas[1] * 2) // 9,
+                    offset,
+                    scaleDPI,
+                    0.5,
+                )
+
+            bonus = bonus_list.pop()
+            MissionCreator.pasteCenter(
+                imMission,
+                bonus,
+                int(floor(canvas[0] * (x + 1.5))) // 7,
+                (canvas[1] * 2) // 9,
+                offset,
+                scaleDPI,
+                0.6,
+            )
+
+        MissionCreator.pasteCenter(
+            imMission,
+            "down-arrow",
+            int(floor(canvas[0] * 6.5)) // 7,
+            canvas[1] // 6,
+            offset,
+            scaleDPI,
+            0.5,
+        )
+
+    def createPortMission(self, imMission, canvas, offset, scaleDPI, bonus_list):
+        # Add port
+
+        coinsList = []
+        for _ in range(0, 8):
+            coinsList.append(random.randint(1, 4))
+
+        for box, n_coin in enumerate(sorted(coinsList)):
+
+            MissionCreator.pasteCenter(
+                imMission,
+                "fullbox",
+                (canvas[0] * (box + 2)) // 10,
+                canvas[1] // 6,
+                offset,
+                scaleDPI,
+                1,
+            )
+
+            for h in range(0, n_coin):
 
                 MissionCreator.pasteCenter(
                     imMission,
-                    "fullbox",
-                    (canvas[0] * (box + 2)) // 16,
-                    canvas[1] // 6,
+                    "coin",
+                    (canvas[0] * (box + 2)) // 10,
+                    canvas[1] // 6 + (64 - h * 128) * scaleDPI,
+                    offset,
+                    scaleDPI,
+                    0.4,
+                )
+
+            bonus = bonus_list.pop()
+            MissionCreator.pasteCenter(
+                imMission,
+                bonus,
+                (canvas[0] * (box + 2)) // 10,
+                canvas[1] // 3 - (128 + 64) * scaleDPI,
+                offset,
+                scaleDPI,
+                0.6,
+            )
+
+    def createMarketMission(self, imMission, canvas, offset, scaleDPI, bonus_list):
+
+        market = ["rond-village-2", "rond-village-1", "rond-village-3"]
+
+        for m, m_name in enumerate(market):
+            x_coord = (canvas[0] * (m + 1)) // 4 + 64 * m * scaleDPI
+
+            MissionCreator.pasteCenter(
+                imMission,
+                m_name,
+                x_coord,
+                128 * scaleDPI,
+                offset,
+                scaleDPI,
+                1.4,
+            )
+
+            for x in range(0, 4):
+                y_coord = (canvas[1] * (x + 1)) // 14 + 64 * scaleDPI
+
+                MissionCreator.pasteCenter(
+                    imMission,
+                    "case",
+                    x_coord - 128 * scaleDPI,
+                    y_coord,
+                    offset,
+                    scaleDPI,
+                    1,
+                )
+                MissionCreator.pasteCenter(
+                    imMission,
+                    "case",
+                    x_coord + 128 * scaleDPI,
+                    y_coord,
                     offset,
                     scaleDPI,
                     1,
                 )
 
-        return imMission
+                if m == 0:
+                    continue
+
+                bonus = bonus_list.pop()
+                MissionCreator.pasteCenter(
+                    imMission,
+                    bonus,
+                    (canvas[0] * (2 * m + 1)) // 8 + 64 * (2 * m - 1) // 2 * scaleDPI,
+                    y_coord,
+                    offset,
+                    scaleDPI,
+                    0.6,
+                )

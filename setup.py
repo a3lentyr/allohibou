@@ -4,5 +4,6 @@ import numpy
 
 
 setup(
-    ext_modules=cythonize("lib/landGenerator.pyx"), include_dirs=[numpy.get_include()]
+    ext_modules=cythonize("pyx/landGenerator.pyx"),
+    include_dirs=[numpy.get_include()],
 )

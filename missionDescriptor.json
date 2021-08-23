@@ -2,19 +2,22 @@
     "missions": [
         {
             "icon": "rond-village",
+            "type": "village",
             "missionBackground": "villageMission"
         },
         {
             "icon": "rond-port",
             "forceIcon": "parrot",
             "forceScale": "force1",
+            "type": "port",
             "missionBackground": "portMission"
         },
         {
+            "type": "market",
             "icon": "rond-village-icon",
             "forceIcon": "pirate-patch",
             "forceScale": "force1",
-            "missionBackground": "square"
+            "missionBackground": "marketMission"
         }
     ]
 }
