@@ -3,21 +3,36 @@
         {
             "icon": "rond-village",
             "type": "village",
-            "missionBackground": "villageMission"
+            "missionBackground": "villageMission",
+            "objectives": [
+                "banner-diamond",
+                "banner-flag",
+                "banner-village"
+            ]
         },
         {
             "icon": "rond-port",
             "forceIcon": "parrot",
             "forceScale": "force1",
             "type": "port",
-            "missionBackground": "portMission"
+            "missionBackground": "portMission",
+            "objectives": [
+                "banner-bomb",
+                "banner-island",
+                "banner-coin"
+            ]
         },
         {
             "type": "market",
             "icon": "rond-village-icon",
             "forceIcon": "pirate-patch",
             "forceScale": "force1",
-            "missionBackground": "marketMission"
+            "missionBackground": "marketMission",
+            "objectives": [
+                "banner-chest",
+                "banner-set",
+                "banner-case"
+            ]
         }
     ]
 }

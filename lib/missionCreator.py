@@ -104,6 +104,18 @@ class MissionCreator:
                     imMission, canvas, offset, scaleDPI, bonus_list
                 )
 
+            # add objectives
+            objective = random.choice(missions[i]["objectives"])
+            MissionCreator.pasteCenter(
+                imMission,
+                objective,
+                canvas[0] - (128 + 60) * scaleDPI,
+                canvas[1] // 3 - (100) * scaleDPI,
+                offset,
+                scaleDPI,
+                1,
+            )
+
         return imMission
 
     def createVillageMission(self, imMission, canvas, offset, scaleDPI, bonus_list):
@@ -169,24 +181,24 @@ class MissionCreator:
             coinsList.append(random.randint(1, 4))
 
         for box, n_coin in enumerate(sorted(coinsList)):
-
+            x_pos = (canvas[0] * (box + 2)) // 10
             MissionCreator.pasteCenter(
                 imMission,
                 "fullbox",
-                (canvas[0] * (box + 2)) // 10,
-                canvas[1] // 6,
+                x_pos,
+                canvas[1] // 6 - 128 * scaleDPI,
                 offset,
                 scaleDPI,
                 1,
             )
 
             for h in range(0, n_coin):
-
+                y_pos = canvas[1] // 6 + (64 - 128 - h * 128) * scaleDPI
                 MissionCreator.pasteCenter(
                     imMission,
                     "coin",
-                    (canvas[0] * (box + 2)) // 10,
-                    canvas[1] // 6 + (64 - h * 128) * scaleDPI,
+                    x_pos,
+                    y_pos,
                     offset,
                     scaleDPI,
                     0.4,
@@ -196,8 +208,8 @@ class MissionCreator:
             MissionCreator.pasteCenter(
                 imMission,
                 bonus,
-                (canvas[0] * (box + 2)) // 10,
-                canvas[1] // 3 - (128 + 64) * scaleDPI,
+                x_pos,
+                canvas[1] // 3 - (128 + 128 + 64) * scaleDPI,
                 offset,
                 scaleDPI,
                 0.6,
@@ -208,20 +220,31 @@ class MissionCreator:
         market = ["rond-village-2", "rond-village-1", "rond-village-3"]
 
         for m, m_name in enumerate(market):
-            x_coord = (canvas[0] * (m + 1)) // 4 + 64 * m * scaleDPI
+            x_coord = (canvas[0] * (2 * m + 1)) // 6 + (64 * m + 128 + 64) * scaleDPI
 
-            MissionCreator.pasteCenter(
-                imMission,
-                m_name,
-                x_coord,
-                128 * scaleDPI,
-                offset,
-                scaleDPI,
-                1.4,
-            )
+            if m != 2:
+                MissionCreator.pasteCenter(
+                    imMission,
+                    m_name,
+                    x_coord,
+                    128 * scaleDPI,
+                    offset,
+                    scaleDPI,
+                    1.4,
+                )
+            else:
+                MissionCreator.pasteCenter(
+                    imMission,
+                    m_name,
+                    x_coord - 128 * scaleDPI,
+                    128 * scaleDPI,
+                    offset,
+                    scaleDPI,
+                    1.4,
+                )
 
             for x in range(0, 4):
-                y_coord = (canvas[1] * (x + 1)) // 14 + 64 * scaleDPI
+                y_coord = (canvas[1] * (x + 2)) // 20 - 64 * scaleDPI
 
                 MissionCreator.pasteCenter(
                     imMission,
@@ -232,15 +255,17 @@ class MissionCreator:
                     scaleDPI,
                     1,
                 )
-                MissionCreator.pasteCenter(
-                    imMission,
-                    "case",
-                    x_coord + 128 * scaleDPI,
-                    y_coord,
-                    offset,
-                    scaleDPI,
-                    1,
-                )
+
+                if m != 2:
+                    MissionCreator.pasteCenter(
+                        imMission,
+                        "case",
+                        x_coord + 128 * scaleDPI,
+                        y_coord,
+                        offset,
+                        scaleDPI,
+                        1,
+                    )
 
                 if m == 0:
                     continue
@@ -249,7 +274,9 @@ class MissionCreator:
                 MissionCreator.pasteCenter(
                     imMission,
                     bonus,
-                    (canvas[0] * (2 * m + 1)) // 8 + 64 * (2 * m - 1) // 2 * scaleDPI,
+                    (canvas[0] * (2 * m)) // 6
+                    + 64 * (2 * m - 1) // 2 * scaleDPI
+                    + (128 + 64) * scaleDPI,
                     y_coord,
                     offset,
                     scaleDPI,
