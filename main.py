@@ -80,7 +80,7 @@ def profile():
     profiler.enable()
 
     im = createImage()
-    im.save("test.png")
+    # im.save("test.png")
 
     profiler.disable()
     stats = pstats.Stats(profiler).sort_stats("cumtime")
@@ -88,6 +88,6 @@ def profile():
 
 
 if __name__ == "__main__":
-    # profile()
+    profile()
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
