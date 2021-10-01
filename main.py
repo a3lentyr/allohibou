@@ -50,7 +50,7 @@ def createImage():
     layout = (2480 * scaleDPI * 2, 3508 * scaleDPI)  # A4
 
     imLayout = Image.new("RGBA", layout, BG_COLOR)
-    imLayout.paste(createTerrain(canvas, scaleDPI), (0, 0))
+    # imLayout.paste(createTerrain(canvas, scaleDPI), (0, 0))
     imLayout.paste(
         MissionCreator(BG_COLOR).createMissionSheet(canvas, scaleDPI), (canvas[0], 0)
     )
@@ -88,6 +88,6 @@ def profile():
 
 
 if __name__ == "__main__":
-    profile()
+    # profile()
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
