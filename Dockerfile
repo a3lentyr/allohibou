@@ -17,4 +17,4 @@ COPY img /app/img
 COPY missionDescriptor.json /app
 COPY lib /app/lib
 
-CMD python main.py
+CMD python -u main.py

@@ -22,29 +22,26 @@ class MissionCreator:
 
         common_bonus = [
             "bomb",
-            "parrot",
-            "pirate-patch",
             "jolly-roger",
         ]
 
         rare_bonus = [
-            "diamond",
-            "palm-tree",
             "pirate-ship",
-            "rond-village-2-bonus",
         ]
 
-        unique_bonus = [
-            "rond-village-1-bonus",
-            "rond-village-3-bonus",
-        ]
+        unique_bonus = []
+
+        with open("missionDescriptor.json") as f:
+            missions = random.sample(json.load(f)["missions"], 3)
+
+        for m in missions:
+            common_bonus.extend(m["bonus"])
+            rare_bonus.extend(m["rare_bonus"])
+            unique_bonus.extend(m["unique_bonus"])
 
         bonus_list = 6 * common_bonus + 3 * rare_bonus + unique_bonus  # 12+8+8 = 28
 
         random.shuffle(bonus_list)
-
-        with open("missionDescriptor.json") as f:
-            missions = random.sample(json.load(f)["missions"], 3)
 
         for i in range(0, 3):
             short = i == 0

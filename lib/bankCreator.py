@@ -10,17 +10,17 @@ def createBankMission(imMission, canvas, offset, scaleDPI, bonus_list, short):
     # Add bank
 
     coinsList = []
-    number_width = 8
+    number_width = 6
     if short:
-        number_width = 6
+        number_width = 5
     for _ in range(0, number_width):
-        coinsList.append(random.randint(1, 4))
+        coinsList.append(random.randint(1, 2))
 
     for box, n_coin in enumerate(sorted(coinsList)):
-        x_pos = (canvas[0] * (box + 2)) // 10
+        x_pos = (canvas[0] * (box + 2)) // 8
         pasteCenter(
             imMission,
-            "fullbox",
+            "loan",
             x_pos,
             canvas[1] // 6,
             offset,
@@ -28,25 +28,14 @@ def createBankMission(imMission, canvas, offset, scaleDPI, bonus_list, short):
             1,
         )
 
-        for h in range(0, n_coin):
-            y_pos = canvas[1] // 6 + (64 - h * 128) * scaleDPI
+        for n in range(n_coin):
+            bonus = bonus_list.pop()
             pasteCenter(
                 imMission,
-                "coin",
-                x_pos,
-                y_pos,
+                bonus,
+                x_pos - 64,
+                (148 * (n + 1) + 64) * scaleDPI,
                 offset,
                 scaleDPI,
-                0.4,
+                0.5,
             )
-
-        bonus = bonus_list.pop()
-        pasteCenter(
-            imMission,
-            bonus,
-            x_pos,
-            canvas[1] // 3 - (128 + 64) * scaleDPI,
-            offset,
-            scaleDPI,
-            0.6,
-        )

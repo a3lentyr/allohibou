@@ -8,7 +8,12 @@
                 "banner-diamond",
                 "banner-flag",
                 "banner-village"
-            ]
+            ],
+            "bonus": [],
+            "rare_bonus": [
+                "diamond"
+            ],
+            "unique_bonus": []
         },
         {
             "icon": "rond-port",
@@ -20,19 +25,31 @@
                 "banner-bomb",
                 "banner-island",
                 "banner-coin"
-            ]
+            ],
+            "bonus": [
+                "parrot"
+            ],
+            "rare_bonus": [
+                "palm-tree"
+            ],
+            "unique_bonus": []
         },
         {
             "icon": "rond-bank",
-            "forceIcon": "parrot",
+            "forceIcon": "monkey",
             "forceScale": "force1",
             "type": "bank",
             "missionBackground": "bankMission",
             "objectives": [
-                "banner-bomb",
-                "banner-island",
-                "banner-coin"
-            ]
+                "banner-receipt",
+                "banner-bank",
+                "banner-doublecoin"
+            ],
+            "bonus": [
+                "monkey"
+            ],
+            "rare_bonus": [],
+            "unique_bonus": []
         },
         {
             "type": "market",
@@ -44,6 +61,16 @@
                 "banner-chest",
                 "banner-set",
                 "banner-case"
+            ],
+            "bonus": [
+                "pirate-patch"
+            ],
+            "rare_bonus": [
+                "rond-village-2-bonus"
+            ],
+            "unique_bonus": [
+                "rond-village-1-bonus",
+                "rond-village-3-bonus"
             ]
         }
     ]
