@@ -13,7 +13,10 @@
             "rare_bonus": [
                 "diamond"
             ],
-            "unique_bonus": []
+            "unique_bonus": [],
+            "mapIcon": [
+                "rond-village"
+            ]
         },
         {
             "icon": "rond-port",
@@ -32,7 +35,10 @@
             "rare_bonus": [
                 "palm-tree"
             ],
-            "unique_bonus": []
+            "unique_bonus": [],
+            "mapIcon": [
+                "rond-port"
+            ]
         },
         {
             "icon": "rond-bank",
@@ -49,7 +55,28 @@
                 "monkey"
             ],
             "rare_bonus": [],
-            "unique_bonus": []
+            "unique_bonus": [],
+            "mapIcon": [
+                "rond-bank"
+            ]
+        },
+        {
+            "icon": "rond-castle",
+            "type": "castle",
+            "missionBackground": "castleMission",
+            "objectives": [
+                "banner-rhum",
+                "banner-redboat",
+                "banner-reputation"
+            ],
+            "bonus": [],
+            "rare_bonus": [
+                "rhum"
+            ],
+            "unique_bonus": [],
+            "mapIcon": [
+                "rond-castle"
+            ]
         },
         {
             "type": "market",
@@ -71,6 +98,11 @@
             "unique_bonus": [
                 "rond-village-1-bonus",
                 "rond-village-3-bonus"
+            ],
+            "mapIcon": [
+                "rond-village-1",
+                "rond-village-2",
+                "rond-village-3"
             ]
         }
     ]

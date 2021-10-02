@@ -19,7 +19,7 @@ app = Flask(__name__)
 BG_COLOR = (232, 205, 160, 255)
 
 
-def createTerrain(canvas, scaleDPI):
+def createTerrain(canvas, scaleDPI, missionIcon):
     # creating terrain
 
     im = Image.new("RGBA", canvas, BG_COLOR)
@@ -29,7 +29,9 @@ def createTerrain(canvas, scaleDPI):
 
     # find places
     stack = StackDrawer()
-    stack.merge(MapCreator(canvas, coastalPlaces, mountainsPlaces).toStack())
+    stack.merge(
+        MapCreator(canvas, coastalPlaces, mountainsPlaces, missionIcon).toStack()
+    )
 
     # Drawing
 
@@ -50,10 +52,12 @@ def createImage():
     layout = (2480 * scaleDPI * 2, 3508 * scaleDPI)  # A4
 
     imLayout = Image.new("RGBA", layout, BG_COLOR)
-    # imLayout.paste(createTerrain(canvas, scaleDPI), (0, 0))
-    imLayout.paste(
-        MissionCreator(BG_COLOR).createMissionSheet(canvas, scaleDPI), (canvas[0], 0)
+
+    missionImage, missionIcon = MissionCreator(BG_COLOR).createMissionSheet(
+        canvas, scaleDPI
     )
+    imLayout.paste(missionImage, (canvas[0], 0))
+    imLayout.paste(createTerrain(canvas, scaleDPI, missionIcon), (0, 0))
 
     return imLayout
 

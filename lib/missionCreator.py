@@ -7,6 +7,7 @@ from lib.portCreator import createPortMission
 from lib.villageCreator import createVillageMission
 from lib.marketCreator import createMarketMission
 from lib.bankCreator import createBankMission
+from lib.castleCreator import createCastleMission
 from lib.util import pasteCenter
 
 # attribution : https://crossheadstudios.com/
@@ -31,6 +32,8 @@ class MissionCreator:
 
         unique_bonus = []
 
+        missionIcon = []
+
         with open("missionDescriptor.json") as f:
             missions = random.sample(json.load(f)["missions"], 3)
 
@@ -38,8 +41,11 @@ class MissionCreator:
             common_bonus.extend(m["bonus"])
             rare_bonus.extend(m["rare_bonus"])
             unique_bonus.extend(m["unique_bonus"])
+            missionIcon.extend(m["mapIcon"])
 
-        bonus_list = 6 * common_bonus + 3 * rare_bonus + unique_bonus  # 12+8+8 = 28
+        bonus_list = (
+            10 * common_bonus + 5 * rare_bonus + 2 * unique_bonus
+        )  # 12+8+8 = 28
 
         random.shuffle(bonus_list)
 
@@ -100,6 +106,10 @@ class MissionCreator:
                 createMarketMission(
                     imMission, canvas, offset, scaleDPI, bonus_list, short
                 )
+            if missions[i]["type"] == "castle":
+                createCastleMission(
+                    imMission, canvas, offset, scaleDPI, bonus_list, short
+                )
 
             # add objectives
             objective = random.choice(missions[i]["objectives"])
@@ -113,4 +123,4 @@ class MissionCreator:
                 1,
             )
 
-        return imMission
+        return imMission, missionIcon

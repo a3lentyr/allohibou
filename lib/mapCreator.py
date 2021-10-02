@@ -51,12 +51,14 @@ class MapCreator:
     _mapMargin: int
     _coastalPlaces: List[Tuple[int, int]]
     _mountainsPlaces: List[Tuple[int, int]]
+    _missionIcon: List[str]
 
     def __init__(
         self,
         canvasSize: Tuple[int, int],
         coastalPlaces: List[Tuple[int, int]],
         mountainsPlaces: List[Tuple[int, int]],
+        missionIcon: List[str],
         canvasOffset: Tuple[int, int] = (0, 0),
         nCities=12,
         nRoads=21,
@@ -72,6 +74,7 @@ class MapCreator:
         self._mapMargin = floor(max(canvasSize[0], canvasSize[1]) * 0.07)
         self._coastalPlaces = coastalPlaces
         self._mountainsPlaces = mountainsPlaces
+        self._missionIcon = missionIcon
 
         self.addCross()
         self.placeMountains()
@@ -222,17 +225,10 @@ class MapCreator:
 
     def allocateCities(self):
 
-        possibleCities = [
-            "rond-port",
-            "rond-village-1",
-            "rond-village-2",
-            "rond-village-3",
-            "rond-village",
-        ]
-        random.shuffle(possibleCities)
+        random.shuffle(self._missionIcon)
 
         for city_id, city in enumerate(self._citiesPlaces):
-            city._type = possibleCities[city_id % len(possibleCities)]
+            city._type = self._missionIcon[city_id % len(self._missionIcon)]
 
     def allocateRoads(self):
         possibleRoads = [
