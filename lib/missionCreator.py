@@ -8,6 +8,8 @@ from lib.villageCreator import createVillageMission
 from lib.marketCreator import createMarketMission
 from lib.bankCreator import createBankMission
 from lib.castleCreator import createCastleMission
+from lib.libraryCreator import createLibraryMission
+from lib.bidCreator import createBidMission
 from lib.util import pasteCenter
 
 # attribution : https://crossheadstudios.com/
@@ -110,6 +112,12 @@ class MissionCreator:
                 createCastleMission(
                     imMission, canvas, offset, scaleDPI, bonus_list, short
                 )
+            if missions[i]["type"] == "library":
+                createLibraryMission(
+                    imMission, canvas, offset, scaleDPI, bonus_list, short
+                )
+            if missions[i]["type"] == "bid":
+                createBidMission(imMission, canvas, offset, scaleDPI, bonus_list, short)
 
             # add objectives
             objective = random.choice(missions[i]["objectives"])

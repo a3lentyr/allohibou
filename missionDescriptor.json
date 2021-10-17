@@ -79,6 +79,48 @@
             ]
         },
         {
+            "icon": "rond-library",
+            "type": "library",
+            "missionBackground": "libraryMission",
+            "objectives": [
+                "banner-library",
+                "banner-spyglass",
+                "banner-map"
+            ],
+            "bonus": [
+                "map"
+            ],
+            "rare_bonus": [],
+            "unique_bonus": [
+                "spyglass"
+            ],
+            "mapIcon": [
+                "rond-library"
+            ]
+        },
+        {
+            "icon": "rond-bid",
+            "type": "bid",
+            "missionBackground": "investMission",
+            "objectives": [
+                "banner-banana",
+                "banner-three",
+                "banner-bananaset"
+            ],
+            "bonus": [],
+            "rare_bonus": [],
+            "unique_bonus": [
+                "rond-village-1-bonus",
+                "rond-village-4-bonus",
+                "rond-village-3-bonus"
+            ],
+            "mapIcon": [
+                "rond-village-1",
+                "rond-village-4",
+                "rond-village-3"
+            ]
+        },
+        {
             "type": "market",
             "icon": "rond-village-icon",
             "forceIcon": "pirate-patch",
