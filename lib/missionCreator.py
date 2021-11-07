@@ -10,6 +10,7 @@ from lib.bankCreator import createBankMission
 from lib.castleCreator import createCastleMission
 from lib.libraryCreator import createLibraryMission
 from lib.bidCreator import createBidMission
+from lib.caveCreator import createCaveMission
 from lib.util import pasteCenter
 
 # attribution : https://crossheadstudios.com/
@@ -118,6 +119,10 @@ class MissionCreator:
                 )
             if missions[i]["type"] == "bid":
                 createBidMission(imMission, canvas, offset, scaleDPI, bonus_list, short)
+            if missions[i]["type"] == "cave":
+                createCaveMission(
+                    imMission, canvas, offset, scaleDPI, bonus_list, short
+                )
 
             # add objectives
             objective = random.choice(missions[i]["objectives"])

@@ -57,7 +57,7 @@ def createImage():
         canvas, scaleDPI
     )
     imLayout.paste(missionImage, (canvas[0], 0))
-    imLayout.paste(createTerrain(canvas, scaleDPI, missionIcon), (0, 0))
+    # imLayout.paste(createTerrain(canvas, scaleDPI, missionIcon), (0, 0))
 
     return imLayout
 

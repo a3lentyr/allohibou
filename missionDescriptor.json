@@ -146,6 +146,22 @@
                 "rond-village-2",
                 "rond-village-3"
             ]
+        },
+        {
+            "icon": "rond-cave",
+            "type": "cave",
+            "missionBackground": "caveMission",
+            "objectives": [
+                "banner-diamondcave",
+                "banner-cave",
+                "banner-caveroad"
+            ],
+            "bonus": [],
+            "rare_bonus": [],
+            "unique_bonus": [],
+            "mapIcon": [
+                "rond-cave"
+            ]
         }
     ]
 }
